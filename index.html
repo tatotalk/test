@@ -1,166 +1,620 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter the Story</title>
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FEDPromptly Base · Premium AI Prompts</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* ── reset & base ── */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #0b0b0b;
-            color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            overflow: hidden;
+        .prompt-blur {
+            filter: blur(12px) brightness(0.4);
+            transform: scale(1.05);
+            transition: filter 0.4s ease, transform 0.4s ease;
+            pointer-events: none;
             user-select: none;
         }
-
-        /* ── main button ── */
-        #enterBtn {
-            padding: 1.2rem 4rem;
-            font-size: 1.6rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            color: #fff;
-            background: linear-gradient(145deg, #1e1e1e, #121212);
-            border: 2px solid rgba(255, 255, 255, 0.08);
-            border-radius: 60px;
+        .prompt-blur.unlocked {
+            filter: blur(0) brightness(1);
+            transform: scale(1);
+            pointer-events: auto;
+            user-select: auto;
+        }
+        .lock-overlay {
+            transition: opacity 0.4s ease;
+        }
+        .lock-overlay.unlocked {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+        /* Age Gate */
+        #age-verification-overlay {
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+            z-index: 9999;
+        }
+        #age-verification-overlay.hidden-overlay {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        #age-verification-overlay .modal-card {
+            transform: scale(0.95);
+            transition: transform 0.4s ease;
+        }
+        #age-verification-overlay:not(.hidden-overlay) .modal-card {
+            transform: scale(1);
+        }
+        body.modal-open, body.age-denied {
+            overflow: hidden;
+        }
+        /* Denied state background lock */
+        #age-denied-message {
+            transition: opacity 0.3s ease;
+        }
+        /* Card styles */
+        .card-hover {
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .card-hover:hover {
+            border-color: #fbbf24;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.05);
+            transform: translateY(-2px);
+        }
+        details summary {
             cursor: pointer;
-            z-index: 20;
-            box-shadow:
-                0 8px 32px rgba(0, 0, 0, 0.7),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            transition: transform 0.25s ease, box-shadow 0.3s ease, background 0.3s ease;
-            position: relative;
+            list-style: none;
         }
-
-        #enterBtn:hover {
-            transform: scale(1.05);
-            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 215, 100, 0.06);
-        }
-
-        #enterBtn:active {
-            transform: scale(0.96);
-        }
-
-        #enterBtn.hidden {
+        details summary::-webkit-details-marker {
             display: none;
         }
-
-        /* ── YouTube player container ── */
-        #player-container {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 640px;
-            max-width: 92vw;
-            aspect-ratio: 16 / 9;
-            z-index: 10;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+        #paypal-modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #paypal-modal.hidden-modal {
             opacity: 0;
-            transition: opacity 0.9s ease 0.2s;
+            visibility: hidden;
             pointer-events: none;
-            background: #000;
         }
-
-        #player-container.show {
-            opacity: 1;
-            pointer-events: auto;
+        #paypal-modal .modal-card {
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
         }
-
-        /* ── responsive tweak ── */
-        @media (max-width: 700px) {
-            #player-container {
-                bottom: 20px;
-                width: 95vw;
-            }
-            #enterBtn {
-                padding: 1rem 2.4rem;
-                font-size: 1.2rem;
-            }
+        #paypal-modal:not(.hidden-modal) .modal-card {
+            transform: scale(1);
+        }
+        body.paypal-open {
+            overflow: hidden;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        .animate-pulse-dot {
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+        .category-pill.active {
+            background: #fbbf24;
+            color: black;
+            border-color: #fbbf24;
+        }
+        .star-filled {
+            color: #fbbf24;
+        }
+        .star-empty {
+            color: #3f3f46;
+        }
+        .trending-badge {
+            animation: pulse-dot 2s ease-in-out infinite;
         }
     </style>
 </head>
+<body class="bg-black text-gray-100 font-sans antialiased selection:bg-amber-500 selection:text-black">
 
-<body>
+    <!-- ============================================================ -->
+    <!-- 1.  AGE VERIFICATION OVERLAY (Shows on load)                  -->
+    <!-- ============================================================ -->
+    <div id="age-verification-overlay" class="fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-md px-4">
+        <div class="modal-card w-full max-w-md bg-zinc-950 border border-amber-500/30 rounded-2xl p-8 text-center shadow-2xl">
+            <span class="text-6xl block mb-4">🍺</span>
+            <h2 class="text-2xl font-black text-white mb-2">Are you 21 or older?</h2>
+            <p class="text-zinc-400 text-sm mb-6 leading-relaxed">
+                This vault contains advanced AI prompting techniques and premium content.
+                <br /><span class="text-zinc-500 text-xs">Please confirm your age to continue.</span>
+            </p>
+            
+            <!-- Buttons -->
+            <div id="age-verification-buttons" class="flex flex-col sm:flex-row gap-3">
+                <button onclick="verifyAge(true)" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-lg transition uppercase tracking-wide text-sm flex-1 shadow-lg shadow-amber-500/20">
+                    Yes, I am 21+
+                </button>
+                <button onclick="verifyAge(false)" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold px-6 py-3 rounded-lg transition uppercase tracking-wide text-sm flex-1">
+                    No, I'm under 21
+                </button>
+            </div>
 
-    <!-- ENTER BUTTON -->
-    <button id="enterBtn">✦ Enter the Story ✦</button>
+            <!-- Denied Message (hidden by default) -->
+            <div id="age-denied-message" class="hidden mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                <p class="text-red-400 font-bold text-sm flex items-center justify-center gap-2">
+                    <span>⛔</span> Access Denied
+                </p>
+                <p class="text-zinc-400 text-xs mt-1">
+                    This content is restricted to users 21 and over.
+                </p>
+                <button onclick="window.location.reload()" class="mt-3 text-zinc-500 hover:text-zinc-300 text-xs underline underline-offset-2 transition">
+                    Try again with a different account
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <!-- YOUTUBE PLAYER (hidden until click) -->
-    <div id="player-container"></div>
+    <!-- ============================================================ -->
+    <!-- 2.  HERO HEADER                                               -->
+    <!-- ============================================================ -->
+    <header class="max-w-7xl mx-auto px-6 pt-20 pb-12 border-b border-zinc-900/60 bg-gradient-to-b from-zinc-950/30 to-transparent">
+        <div class="flex flex-col items-center text-center">
+            <span class="inline-flex items-center gap-2 bg-amber-500/10 text-amber-400 text-[11px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border border-amber-500/20 mb-6">
+                <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse-dot"></span>
+                Premium Access Portal
+            </span>
 
-    <!-- ─── YouTube IFrame API ─── -->
+            <h1 class="text-5xl md:text-7xl font-black text-white tracking-tight leading-none mb-4">
+                FEDPROMPTLY_<span class="text-amber-400">BASE</span>
+            </h1>
+
+            <p class="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto mb-6">
+                Production‑ready AI prompts for <span class="text-white font-semibold">Midjourney</span>,
+                <span class="text-white font-semibold">Unreal Engine</span> &amp; <span class="text-white font-semibold">ChatGPT</span>.
+                <br class="hidden sm:block" />
+                <span class="text-zinc-500 text-base">Free previews. Private masters. Instant delivery.</span>
+            </p>
+
+            <!-- Search Bar -->
+            <div class="w-full max-w-2xl mx-auto mb-5">
+                <div class="relative">
+                    <input type="text" placeholder="Search prompts by model, category, or keyword..." 
+                           class="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-5 py-3.5 pl-12 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/50 transition text-sm" />
+                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-zinc-600 font-mono bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-800">⌘K</span>
+                </div>
+            </div>
+
+            <!-- Category Filters -->
+            <div class="flex flex-wrap items-center justify-center gap-2 w-full max-w-2xl mx-auto mb-5">
+                <button class="category-pill active text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-amber-500/30 transition">All</button>
+                <button class="category-pill text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 transition">Image</button>
+                <button class="category-pill text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 transition">Text</button>
+                <button class="category-pill text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 transition">Video</button>
+                <button class="category-pill text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 transition">3D</button>
+                <button class="category-pill text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 transition">Audio</button>
+                <button class="category-pill text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 transition">Marketing</button>
+                <button class="category-pill text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 transition">Code</button>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full max-w-2xl mx-auto bg-zinc-950/50 border border-zinc-800/80 rounded-xl p-3 backdrop-blur-sm mb-4">
+                <div class="flex items-center gap-2 bg-black/50 border border-zinc-800 rounded-lg px-4 py-2 w-full sm:w-auto flex-1">
+                    <svg class="w-4 h-4 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    <input id="passkey-input" type="password" placeholder="Enter master key" class="w-full bg-transparent border-none text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-0" />
+                </div>
+                <button onclick="unlockAll()" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-2.5 rounded-lg transition uppercase tracking-wider text-xs w-full sm:w-auto whitespace-nowrap shadow-lg shadow-amber-500/10">
+                    🔓 Unlock All
+                </button>
+                <a href="YOUR_GROUP_LINK_HERE" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded-lg transition uppercase tracking-wider text-xs w-full sm:w-auto whitespace-nowrap text-center">
+                    Join Group
+                </a>
+            </div>
+
+            <!-- Master Key Hint -->
+            <div class="flex flex-wrap items-center justify-center gap-2 text-zinc-500 text-xs font-mono bg-zinc-950/30 border border-zinc-800/40 rounded-full px-4 py-1.5">
+                <span class="text-zinc-600">🔑</span>
+                <span>Master key:</span>
+                <code class="bg-black/60 px-2 py-0.5 rounded border border-zinc-800 text-amber-400 font-bold tracking-wider">VAULT2026</code>
+                <span class="text-zinc-600 hidden sm:inline">· Enter to bypass checkout</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================================ -->
+    <!-- 3.  STATS BAR                                                 -->
+    <!-- ============================================================ -->
+    <section class="max-w-7xl mx-auto px-6 py-6 border-b border-zinc-900/40">
+        <div class="flex flex-wrap items-center justify-center gap-8 text-center">
+            <div>
+                <span class="text-2xl font-black text-white">12,847</span>
+                <span class="text-zinc-500 text-xs block uppercase tracking-wider">Prompts Available</span>
+            </div>
+            <div>
+                <span class="text-2xl font-black text-white">3,421</span>
+                <span class="text-zinc-500 text-xs block uppercase tracking-wider">Creators</span>
+            </div>
+            <div>
+                <span class="text-2xl font-black text-white">94%</span>
+                <span class="text-zinc-500 text-xs block uppercase tracking-wider">Satisfaction Rate</span>
+            </div>
+            <div>
+                <span class="text-2xl font-black text-white">2.3K</span>
+                <span class="text-zinc-500 text-xs block uppercase tracking-wider">Prompts Sold Today</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 4.  MAIN GRID                                                 -->
+    <!-- ============================================================ -->
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xl font-black text-white">🔥 Trending Prompts</h2>
+                <span class="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Popular</span>
+            </div>
+            <a href="#" class="text-zinc-500 hover:text-zinc-300 text-xs font-medium transition">View all →</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <!-- CARD 1 : FREE -->
+            <div class="card-hover bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden flex flex-col">
+                <div class="relative aspect-video bg-black border-b border-zinc-900">
+                    <img src="https://placehold.co/600x400/1a1a1a/444?text=Free+Preview" alt="Public preview" class="w-full h-full object-cover" />
+                    <span class="absolute top-3 left-3 bg-emerald-500/90 text-black text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">Free</span>
+                    <span class="absolute top-3 right-3 bg-blue-500/20 text-blue-400 text-[9px] font-black px-2 py-0.5 rounded-full border border-blue-500/30 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                        Verified
+                    </span>
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="text-lg font-bold text-white">Studio Portrait · Basic</h3>
+                        <div class="flex items-center gap-0.5">
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="star-empty">★</span>
+                            <span class="text-zinc-500 text-[10px] ml-1">(47)</span>
+                        </div>
+                    </div>
+                    <p class="text-zinc-400 text-sm mb-2">Open‑source lighting config. Free for all visitors.</p>
+                    <div class="flex flex-wrap gap-1.5 mb-4">
+                        <span class="text-[9px] font-mono text-zinc-600 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">Midjourney v6</span>
+                        <span class="text-[9px] font-mono text-zinc-600 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">Photography</span>
+                    </div>
+                    <div class="mt-auto pt-4 border-t border-zinc-900 flex justify-between items-center">
+                        <span class="text-xs font-mono text-zinc-500">FREE</span>
+                        <a href="#" download class="bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold px-4 py-2 rounded transition">Download TXT</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 2 : PRIVATE -->
+            <div id="private-card-1" class="card-hover bg-zinc-950 border border-amber-500/30 rounded-lg overflow-hidden flex flex-col relative">
+                <div class="relative aspect-video bg-black border-b border-zinc-900 overflow-hidden">
+                    <img src="https://placehold.co/600x400/2a1f0a/664d1a?text=Private+Prompt" alt="Private prompt preview" class="w-full h-full object-cover prompt-blur" id="img-private-1" />
+                    <div class="absolute inset-0 flex flex-col items-center justify-center lock-overlay" id="lock-private-1">
+                        <span class="text-4xl text-amber-400 mb-1">🔒</span>
+                        <span class="bg-amber-500 text-black text-[10px] font-black px-3 py-0.5 rounded uppercase tracking-widest shadow-lg">Private</span>
+                    </div>
+                    <span class="absolute top-3 left-3 bg-rose-500/20 text-rose-400 text-[9px] font-black px-2 py-0.5 rounded-full border border-rose-500/30 flex items-center gap-1 trending-badge">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/><path d="M10 6a1 1 0 00-1 1v3.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7a1 1 0 00-1-1z"/></svg>
+                        Trending
+                    </span>
+                    <span class="absolute bottom-3 right-3 bg-amber-500/20 text-amber-400 text-[9px] font-black px-2 py-0.5 rounded-full border border-amber-500/30">🎯 Bundle</span>
+                </div>
+                <div class="p-6 flex flex-col flex-grow bg-gradient-to-b from-zinc-950 to-zinc-900/50">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="text-xs font-mono text-amber-400 uppercase tracking-widest">Premium Only</div>
+                        <div class="flex items-center gap-0.5">
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="text-zinc-500 text-[10px] ml-1">(128)</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-zinc-300 mb-2">Unreal 5 Cinematic Render</h3>
+                    <p class="text-zinc-500 text-sm mb-2">Cinematic shots with Lumen, Nanite, and volumetric fog.</p>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="text-[9px] font-mono text-zinc-600 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">Unreal 5.3</span>
+                        <span class="text-[9px] font-mono text-zinc-600 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">Cinematic</span>
+                        <span class="text-[9px] font-mono text-zinc-600 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">8K</span>
+                    </div>
+                    <details class="mb-4 text-sm bg-zinc-900/50 rounded-lg p-2 border border-zinc-800/50">
+                        <summary class="text-amber-400 hover:text-amber-300 font-mono text-xs uppercase tracking-wider flex items-center gap-2">
+                            <span>▶</span> Preview snippet (locked)
+                        </summary>
+                        <div class="spoiler-content text-zinc-400 text-xs mt-2 p-2 bg-black/40 rounded border border-zinc-800/50 font-mono leading-relaxed">
+                            [Cinematic shot, Unreal Engine 5.3, Lumen + Nanite, 8K, volumetric fog, dramatic god rays, ...]
+                            <span class="text-amber-500 font-bold">Full prompt (500+ tokens) unlocks with purchase.</span>
+                        </div>
+                    </details>
+                    <div class="mt-auto pt-4 border-t border-zinc-900/80 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-mono text-zinc-500 block uppercase">Single</span>
+                            <span class="text-lg font-black text-amber-400">$9.99</span>
+                        </div>
+                        <button onclick="openCheckout('Unreal 5 Cinematic Render', '9.99')" class="bg-amber-500 hover:bg-amber-400 text-black text-xs font-black px-4 py-2 rounded transition uppercase tracking-wider">Unlock Now</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 3 : PRIVATE #2 -->
+            <div id="private-card-2" class="card-hover bg-zinc-950 border border-amber-500/30 rounded-lg overflow-hidden flex flex-col relative">
+                <div class="relative aspect-video bg-black border-b border-zinc-900 overflow-hidden">
+                    <img src="https://placehold.co/600x400/1a2a1a/2d5a2d?text=Private+Prompt+2" alt="Private prompt preview" class="w-full h-full object-cover prompt-blur" id="img-private-2" />
+                    <div class="absolute inset-0 flex flex-col items-center justify-center lock-overlay" id="lock-private-2">
+                        <span class="text-4xl text-amber-400 mb-1">🔒</span>
+                        <span class="bg-amber-500 text-black text-[10px] font-black px-3 py-0.5 rounded uppercase tracking-widest shadow-lg">Private</span>
+                    </div>
+                </div>
+                <div class="p-6 flex flex-col flex-grow bg-gradient-to-b from-zinc-950 to-zinc-900/50">
+                    <div class="flex items-center justify-between mb-1">
+                        <div class="text-xs font-mono text-amber-400 uppercase tracking-widest">Premium Only</div>
+                        <div class="flex items-center gap-0.5">
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="star-filled">★</span>
+                            <span class="star-empty">★</span>
+                            <span class="text-zinc-500 text-[10px] ml-1">(84)</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-zinc-300 mb-2">Midjourney v6 · Cyberpunk Streets</h3>
+                    <p class="text-zinc-500 text-sm mb-2">Full‑resolution pack includes 4 variations + negative prompts.</p>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="text-[9px] font-mono text-zinc-600 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">Midjourney v6</span>
+                        <span class="text-[9px] font-mono text-zinc-600 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">Cyberpunk</span>
+                        <span class="text-[9px] font-mono text-zinc-600 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">Urban</span>
+                    </div>
+                    <div class="mt-auto pt-4 border-t border-zinc-900/80 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-mono text-zinc-500 block uppercase">Bundle</span>
+                            <span class="text-lg font-black text-amber-400">$14.99</span>
+                        </div>
+                        <button onclick="openCheckout('Midjourney Cyberpunk Bundle', '14.99')" class="bg-amber-500 hover:bg-amber-400 text-black text-xs font-black px-4 py-2 rounded transition uppercase tracking-wider">Unlock Bundle</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- 5.  HIRE A CREATOR                                            -->
+    <!-- ============================================================ -->
+    <section class="max-w-7xl mx-auto px-6 py-12 border-t border-zinc-900/40">
+        <div class="flex items-center gap-3 mb-6">
+            <h2 class="text-xl font-black text-white">👨‍💻 Hire a Prompt Engineer</h2>
+            <span class="text-[10px] font-mono text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">Custom Work</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-zinc-950/50 border border-zinc-800 rounded-xl p-6 text-center hover:border-zinc-700 transition">
+                <div class="w-16 h-16 rounded-full bg-indigo-500/20 mx-auto mb-3 flex items-center justify-center text-2xl">🎨</div>
+                <h4 class="font-bold text-white mb-1">Custom Image Prompts</h4>
+                <p class="text-zinc-500 text-sm mb-4">Get bespoke Midjourney, DALL-E, or Stable Diffusion prompts.</p>
+                <a href="#" class="text-indigo-400 hover:text-indigo-300 text-xs font-bold uppercase tracking-wider transition">Hire Now →</a>
+            </div>
+            <div class="bg-zinc-950/50 border border-zinc-800 rounded-xl p-6 text-center hover:border-zinc-700 transition">
+                <div class="w-16 h-16 rounded-full bg-emerald-500/20 mx-auto mb-3 flex items-center justify-center text-2xl">✍️</div>
+                <h4 class="font-bold text-white mb-1">Marketing Copy Prompts</h4>
+                <p class="text-zinc-500 text-sm mb-4">Custom ChatGPT and Claude prompts for your campaigns.</p>
+                <a href="#" class="text-emerald-400 hover:text-emerald-300 text-xs font-bold uppercase tracking-wider transition">Hire Now →</a>
+            </div>
+            <div class="bg-zinc-950/50 border border-zinc-800 rounded-xl p-6 text-center hover:border-zinc-700 transition">
+                <div class="w-16 h-16 rounded-full bg-amber-500/20 mx-auto mb-3 flex items-center justify-center text-2xl">💻</div>
+                <h4 class="font-bold text-white mb-1">Code Generation Prompts</h4>
+                <p class="text-zinc-500 text-sm mb-4">Custom programming prompts for any language or framework.</p>
+                <a href="#" class="text-amber-400 hover:text-amber-300 text-xs font-bold uppercase tracking-wider transition">Hire Now →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 6.  COMMUNITY HUB                                             -->
+    <!-- ============================================================ -->
+    <section class="max-w-7xl mx-auto px-6 py-12 border-t border-zinc-900/40">
+        <div class="flex items-center gap-3 mb-6">
+            <h2 class="text-xl font-black text-white">💬 Community Hub</h2>
+            <span class="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Live</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-zinc-950/30 border border-zinc-800 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-700 transition">
+                <span class="text-2xl">🎮</span>
+                <div>
+                    <p class="text-white font-bold text-sm">Gaming Prompts</p>
+                    <p class="text-zinc-500 text-xs">1,234 members</p>
+                </div>
+            </div>
+            <div class="bg-zinc-950/30 border border-zinc-800 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-700 transition">
+                <span class="text-2xl">🎨</span>
+                <div>
+                    <p class="text-white font-bold text-sm">Art & Design</p>
+                    <p class="text-zinc-500 text-xs">876 members</p>
+                </div>
+            </div>
+            <div class="bg-zinc-950/30 border border-zinc-800 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-700 transition">
+                <span class="text-2xl">📈</span>
+                <div>
+                    <p class="text-white font-bold text-sm">Marketing Pros</p>
+                    <p class="text-zinc-500 text-xs">2,101 members</p>
+                </div>
+            </div>
+            <div class="bg-zinc-950/30 border border-zinc-800 rounded-xl p-4 flex items-center gap-4 hover:border-zinc-700 transition">
+                <span class="text-2xl">🤖</span>
+                <div>
+                    <p class="text-white font-bold text-sm">AI Developers</p>
+                    <p class="text-zinc-500 text-xs">654 members</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 7.  MEMBERSHIP                                                -->
+    <!-- ============================================================ -->
+    <section id="membership" class="bg-zinc-950 border-t border-zinc-900 py-16 px-6 mt-8">
+        <div class="max-w-3xl mx-auto text-center">
+            <span class="text-amber-400 text-3xl block mb-2">✉️</span>
+            <h2 class="text-3xl font-bold text-white mb-2">Get Daily Free Prompts</h2>
+            <p class="text-zinc-400 text-sm mb-8 max-w-md mx-auto">
+                Join the inner circle – every morning we drop a fresh, tested prompt straight to your inbox.
+            </p>
+            <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" action="#" method="post">
+                <input type="email" placeholder="Enter your email" required class="bg-black border border-zinc-800 rounded-lg px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-amber-500 flex-grow text-sm" />
+                <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-lg transition uppercase tracking-wider text-sm">Join Free</button>
+            </form>
+            <p class="text-zinc-600 text-[10px] mt-4 uppercase tracking-widest">No spam · unsubscribe anytime</p>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 8.  PAYPAL MODAL                                              -->
+    <!-- ============================================================ -->
+    <div id="paypal-modal" class="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 hidden-modal paypal-open">
+        <div class="modal-card w-full max-w-lg bg-zinc-950 border border-amber-500/30 rounded-2xl shadow-2xl overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b border-zinc-800">
+                <h3 class="text-xl font-black text-white tracking-tight">💳 Checkout</h3>
+                <button onclick="closeCheckout()" class="text-zinc-500 hover:text-white text-2xl leading-none transition">&times;</button>
+            </div>
+            <div class="p-6">
+                <div class="bg-zinc-900/50 rounded-xl p-4 border border-zinc-800 mb-6">
+                    <p class="text-zinc-400 text-xs uppercase tracking-widest">You are purchasing</p>
+                    <p id="modal-product-name" class="text-white font-bold text-lg mt-1">Product Name</p>
+                    <p id="modal-product-price" class="text-amber-400 text-2xl font-black mt-1">$0.00</p>
+                </div>
+                <div class="bg-black/40 rounded-xl p-4 border border-zinc-800/50">
+                    <p class="text-zinc-500 text-[10px] uppercase tracking-widest text-center mb-3">Secure Payment via PayPal</p>
+                    <div id="paypal-button-container" class="flex justify-center">
+                        <form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post" target="_top" class="w-full">
+                            <input type="hidden" name="cmd" value="_xclick" />
+                            <input type="hidden" name="business" value="sb-xxxxx@business.example.com" />
+                            <input type="hidden" name="lc" value="US" />
+                            <input type="hidden" id="paypal-item-name" name="item_name" value="Premium AI Prompt" />
+                            <input type="hidden" id="paypal-amount" name="amount" value="9.99" />
+                            <input type="hidden" name="currency_code" value="USD" />
+                            <input type="hidden" name="button_subtype" value="services" />
+                            <input type="hidden" name="no_note" value="1" />
+                            <input type="hidden" name="tax_rate" value="0.00" />
+                            <input type="hidden" name="shipping" value="0.00" />
+                            <input type="hidden" name="add" value="1" />
+                            <input type="hidden" name="bn" value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHosted" />
+                            <button type="submit" class="w-full bg-[#0070ba] hover:bg-[#003087] text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-3 text-sm uppercase tracking-wider">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.067 8.478c.492.88.556 2.014.3 3.3-.436 2.174-1.983 3.814-3.848 4.084-1.681.244-3.346-.422-4.555-1.485-1.203 1.062-2.868 1.729-4.547 1.485-1.865-.27-3.412-1.91-3.848-4.084-.256-1.286-.192-2.42.3-3.3.944-1.686 2.76-2.624 5.166-2.624 1.882 0 3.485.737 4.484 1.962.999-1.225 2.602-1.962 4.484-1.962 2.406 0 4.222.938 5.166 2.624z"/></svg>
+                                Pay with PayPal
+                            </button>
+                        </form>
+                    </div>
+                    <p class="text-zinc-600 text-[10px] text-center mt-3">🔒 Secured by PayPal · You will be redirected to complete payment.</p>
+                </div>
+                <button onclick="closeCheckout()" class="w-full text-center text-zinc-600 hover:text-zinc-400 text-xs underline underline-offset-2 mt-4 transition">Cancel and return to shop</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 9.  JAVASCRIPT ENGINE                                         -->
+    <!-- ============================================================ -->
     <script>
-        // Load the YouTube API script
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        // ----------------------------------------------------------------
+        // A. AGE VERIFICATION (Shows on load, stores session)
+        // ----------------------------------------------------------------
+        const ageOverlay = document.getElementById('age-verification-overlay');
+        const deniedMsg = document.getElementById('age-denied-message');
+        const ageButtons = document.getElementById('age-verification-buttons');
+        const body = document.body;
 
-        var player;
-
-        // This callback is called by the API once it's ready
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player-container', {
-                videoId: 'dPD4mSuZmvU', // <-- your song
-                playerVars: {
-                    'autoplay': 1, // starts muted (see 'mute')
-                    'mute': 1, // required for autoplay in most browsers
-                    'loop': 1,
-                    'playlist': 'dPD4mSuZmvU',
-                    'controls': 1,
-                    'showinfo': 0,
-                    'rel': 0,
-                    'modestbranding': 1,
-                    'iv_load_policy': 3
-                },
-                events: {
-                    'onReady': function(event) {
-                        // Player is ready, but muted.
-                        console.log('🎵 Player ready — waiting for click');
-                    }
-                }
-            });
+        // Check if already verified in this session
+        if (sessionStorage.getItem('ageVerified') === 'true') {
+            ageOverlay.classList.add('hidden-overlay');
+        } else {
+            ageOverlay.classList.remove('hidden-overlay');
+            body.classList.add('modal-open');
         }
 
-        // ── Button click: unmute, set volume, show player ──
-        document.getElementById('enterBtn').addEventListener('click', function() {
-            if (player) {
-                player.unMute();
-                player.setVolume(30); // 30% volume
-                player.playVideo();
+        function verifyAge(isOver21) {
+            if (isOver21) {
+                // Accept: hide overlay, store session, remove scroll lock
+                sessionStorage.setItem('ageVerified', 'true');
+                ageOverlay.classList.add('hidden-overlay');
+                body.classList.remove('modal-open');
+            } else {
+                // Deny: show denial message, hide buttons, keep overlay locked
+                ageButtons.style.display = 'none';
+                deniedMsg.classList.remove('hidden');
+                body.classList.add('age-denied'); // extra lock
+                // Optionally blur the background even more (already blurred by overlay)
             }
+        }
 
-            // Hide button, reveal player
-            this.classList.add('hidden');
-            document.getElementById('player-container').classList.add('show');
+        // ----------------------------------------------------------------
+        // B. PASSKEY / MASTER UNLOCK
+        // ----------------------------------------------------------------
+        const MASTER_KEY = "VAULT2026";
+
+        function unlockAll() {
+            const input = document.getElementById('passkey-input');
+            const entered = input.value.trim();
+            if (entered !== MASTER_KEY) {
+                alert('❌ Invalid master key. Hint: check the header text.');
+                return;
+            }
+            document.querySelectorAll('.prompt-blur').forEach(img => img.classList.add('unlocked'));
+            document.querySelectorAll('.lock-overlay').forEach(overlay => overlay.classList.add('unlocked'));
+            document.querySelectorAll('.card-hover').forEach(card => {
+                card.style.borderColor = '#22c55e';
+                card.style.boxShadow = '0 0 40px rgba(34,197,94,0.08)';
+            });
+            const btn = document.querySelector('button[onclick="unlockAll()"]');
+            if (btn) {
+                btn.textContent = '✅ Unlocked';
+                btn.style.backgroundColor = '#22c55e';
+                btn.style.color = 'black';
+                btn.disabled = true;
+            }
+            input.value = MASTER_KEY;
+        }
+        document.getElementById('passkey-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') unlockAll();
         });
 
-        // ── fallback: if API fails to load, show a hint ──
-        window.addEventListener('load', function() {
-            // If the API hasn't initialized after 5s, the user might need to refresh
-            setTimeout(function() {
-                if (typeof player === 'undefined') {
-                    console.warn('YouTube API took too long — check internet');
-                }
-            }, 5000);
+        // ----------------------------------------------------------------
+        // C. PAYPAL MODAL CONTROLLER
+        // ----------------------------------------------------------------
+        const modal = document.getElementById('paypal-modal');
+
+        function openCheckout(productName, price) {
+            document.getElementById('modal-product-name').textContent = productName;
+            document.getElementById('modal-product-price').textContent = `$${price}`;
+            document.getElementById('paypal-item-name').value = productName;
+            document.getElementById('paypal-amount').value = price;
+            modal.classList.remove('hidden-modal');
+            body.classList.add('paypal-open');
+        }
+
+        function closeCheckout() {
+            modal.classList.add('hidden-modal');
+            body.classList.remove('paypal-open');
+        }
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeCheckout();
         });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden-modal')) closeCheckout();
+        });
+
+        // ----------------------------------------------------------------
+        // D. Category filter toggle
+        // ----------------------------------------------------------------
+        document.querySelectorAll('.category-pill').forEach(pill => {
+            pill.addEventListener('click', function() {
+                document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        console.log('🔐 FEDPromptly BASE loaded with Age Verification (21+)');
+        console.log('📌 If denied, session remains locked until browser restart.');
     </script>
 
 </body>

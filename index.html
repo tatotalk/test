@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter the Story</title>
+
+    <style>
+        /* ── reset & base ── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0b0b;
+            color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* ── main button ── */
+        #enterBtn {
+            padding: 1.2rem 4rem;
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #fff;
+            background: linear-gradient(145deg, #1e1e1e, #121212);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 60px;
+            cursor: pointer;
+            z-index: 20;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.7),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: transform 0.25s ease, box-shadow 0.3s ease, background 0.3s ease;
+            position: relative;
+        }
+
+        #enterBtn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 215, 100, 0.06);
+        }
+
+        #enterBtn:active {
+            transform: scale(0.96);
+        }
+
+        #enterBtn.hidden {
+            display: none;
+        }
+
+        /* ── YouTube player container ── */
+        #player-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 640px;
+            max-width: 92vw;
+            aspect-ratio: 16 / 9;
+            z-index: 10;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            opacity: 0;
+            transition: opacity 0.9s ease 0.2s;
+            pointer-events: none;
+            background: #000;
+        }
+
+        #player-container.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ── responsive tweak ── */
+        @media (max-width: 700px) {
+            #player-container {
+                bottom: 20px;
+                width: 95vw;
+            }
+            #enterBtn {
+                padding: 1rem 2.4rem;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ENTER BUTTON -->
+    <button id="enterBtn">✦ Enter the Story ✦</button>
+
+    <!-- YOUTUBE PLAYER (hidden until click) -->
+    <div id="player-container"></div>
+
+    <!-- ─── YouTube IFrame API ─── -->
+    <script>
+        // Load the YouTube API script
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        var player;
+
+        // This callback is called by the API once it's ready
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player-container', {
+                videoId: 'dPD4mSuZmvU', // <-- your song
+                playerVars: {
+                    'autoplay': 1, // starts muted (see 'mute')
+                    'mute': 1, // required for autoplay in most browsers
+                    'loop': 1,
+                    'playlist': 'dPD4mSuZmvU',
+                    'controls': 1,
+                    'showinfo': 0,
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'iv_load_policy': 3
+                },
+                events: {
+                    'onReady': function(event) {
+                        // Player is ready, but muted.
+                        console.log('🎵 Player ready — waiting for click');
+                    }
+                }
+            });
+        }
+
+        // ── Button click: unmute, set volume, show player ──
+        document.getElementById('enterBtn').addEventListener('click', function() {
+            if (player) {
+                player.unMute();
+                player.setVolume(30); // 30% volume
+                player.playVideo();
+            }
+
+            // Hide button, reveal player
+            this.classList.add('hidden');
+            document.getElementById('player-container').classList.add('show');
+        });
+
+        // ── fallback: if API fails to load, show a hint ──
+        window.addEventListener('load', function() {
+            // If the API hasn't initialized after 5s, the user might need to refresh
+            setTimeout(function() {
+                if (typeof player === 'undefined') {
+                    console.warn('YouTube API took too long — check internet');
+                }
+            }, 5000);
+        });
+    </script>
+
+</body>
+</html>

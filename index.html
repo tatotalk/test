@@ -1,998 +1,1705 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-  <title>Trade Former Gaming Magazine</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Age of Black Fire · Chapter 2</title>
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
 
-  <!-- YouTube IFrame API -->
-  <script src="https://www.youtube.com/iframe_api"></script>
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <style>
-    /* ===== RESET & BASE ===== */
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --gold: #c9a84c;
+            --gold-glow: rgba(201, 168, 76, 0.6);
+            --dark: #0a0a0f;
+            --text: #e8e6e3;
+            --text-dim: rgba(232, 230, 227, 0.6);
+        }
 
-    :root {
-      --bg-primary: #0b0d15;
-      --bg-secondary: #121620;
-      --bg-card: #1a1f2e;
-      --bg-card-hover: #2a1a1a;
-      --border-glow: #8b0000;
-      --neon-red: #ff1744;
-      --neon-red-dark: #d50000;
-      --neon-orange: #ff6d00;
-      --neon-pink: #ff6d00;
-      --neon-yellow: #ffe44a;
-      --neon-green: #4aff8a;
-      --text-primary: #eef2f8;
-      --text-secondary: #c8b0b0;
-      --text-muted: #8a6a6a;
-      --pixel-border: 2px solid rgba(255, 23, 68, 0.2);
-      --shadow-neon: 0 0 30px rgba(255, 23, 68, 0.08);
-      --radius: 12px;
-      --font-display: 'Orbitron', monospace;
-      --font-mono: 'Space Mono', monospace;
-      --font-body: 'Inter', sans-serif;
-    }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--dark);
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            user-select: none;
+        }
 
-    html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+        /* ---------- LAYERS ---------- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: radial-gradient(ellipse at center, #1a0b1f 0%, #0a0a0f 80%);
+        }
 
-    body {
-      font-family: var(--font-body);
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
-      overflow-x: hidden;
-      min-height: 100vh;
-    }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
 
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-    ::-webkit-scrollbar-thumb { background: var(--neon-red); border-radius: 3px; box-shadow: 0 0 12px rgba(255, 23, 68, 0.3); }
+        /* ---------- YOUTUBE PLAYER — NEARLY INVISIBLE ---------- */
+        #youtube-container {
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+            z-index: 999;
+            width: 60px;
+            height: 34px;
+            border-radius: 4px;
+            overflow: hidden;
+            opacity: 0.012;
+            border: none;
+            background: transparent;
+        }
+        #youtube-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
-    a { color: inherit; text-decoration: none; }
-    img { max-width: 100%; display: block; }
+        /* ---------- SLIDES ---------- */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                visibility 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: radial-gradient(ellipse at 30% 20%, rgba(40, 20, 60, 0.7) 0%, rgba(10, 10, 15, 0.95) 70%);
+            text-align: center;
+        }
 
-    .container { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
 
-    .glow-text { text-shadow: 0 0 20px rgba(255, 23, 68, 0.15), 0 0 60px rgba(255, 23, 68, 0.05); }
-    .neon-border { border: 1px solid rgba(255, 23, 68, 0.15); box-shadow: 0 0 20px rgba(255, 23, 68, 0.04); }
+        .slide.exit {
+            opacity: 0;
+            visibility: hidden;
+        }
 
-    .pixel-dot {
-      display: inline-block; width: 8px; height: 8px; background: var(--neon-red);
-      image-rendering: pixelated; margin-right: 6px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-      box-shadow: 0 0 12px rgba(255, 23, 68, 0.4);
-    }
+        /* ============================================================
+           SLIDE 0: CINEMATIC TITLE CARD (EPIC & DYNAMIC)
+        ============================================================ */
+        #slide-0 {
+            background: radial-gradient(ellipse at 50% 40%, #1a0b2a 0%, #0a0a0f 70%, #050308 100%);
+            gap: 0.8rem;
+            position: relative;
+            overflow: hidden;
+        }
 
-    .pixel-divider {
-      width: 100%; height: 4px;
-      background: repeating-linear-gradient(90deg, var(--neon-red) 0px, var(--neon-red) 8px, transparent 8px, transparent 16px);
-      opacity: 0.15; margin: 32px 0;
-    }
+        /* Animated golden vignette overlay */
+        #slide-0::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at center, rgba(201, 168, 76, 0.03) 0%, transparent 70%);
+            animation: vignettePulse 6s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
 
-    .section-tag {
-      font-family: var(--font-display); font-size: 0.7rem; letter-spacing: 3px;
-      text-transform: uppercase; color: var(--neon-red); opacity: 0.7;
-      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
-    }
-    .section-tag::before { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--neon-red), transparent); opacity: 0.2; }
+        @keyframes vignettePulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.3); opacity: 1; }
+        }
 
-    /* ===== HEADER ===== */
-    .site-header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-      background: rgba(11, 13, 21, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255, 23, 68, 0.08); padding: 12px 0; transition: all 0.3s ease;
-    }
-    .site-header.scrolled { background: rgba(11, 13, 21, 0.95); box-shadow: 0 4px 40px rgba(0, 0, 0, 0.6); }
+        /* Floating gold dust (CSS particles) */
+        #slide-0 .dust {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--gold-glow);
+            pointer-events: none;
+            z-index: 0;
+            animation: dustFloat linear infinite;
+            opacity: 0;
+        }
 
-    .header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        @keyframes dustFloat {
+            0% {
+                transform: translateY(100vh) scale(0.2);
+                opacity: 0;
+            }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% {
+                transform: translateY(-10vh) scale(1.2);
+                opacity: 0;
+            }
+        }
 
-    .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 900; font-size: 1.2rem; letter-spacing: -0.5px; color: #fff; flex-shrink: 0; }
-    .brand .icon { font-size: 1.8rem; line-height: 1; filter: drop-shadow(0 0 12px rgba(255, 23, 68, 0.3)); }
-    .brand .highlight { color: var(--neon-red); text-shadow: 0 0 30px rgba(255, 23, 68, 0.2); }
-    .brand .sub { font-family: var(--font-body); font-weight: 300; font-size: 0.55rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); display: block; margin-top: -2px; }
+        #slide-0 .dust:nth-child(1) { left: 8%; animation-duration: 14s; animation-delay: 0s; width: 3px; height: 3px; }
+        #slide-0 .dust:nth-child(2) { left: 20%; animation-duration: 18s; animation-delay: 2s; width: 5px; height: 5px; }
+        #slide-0 .dust:nth-child(3) { left: 35%; animation-duration: 12s; animation-delay: 4s; width: 2px; height: 2px; }
+        #slide-0 .dust:nth-child(4) { left: 50%; animation-duration: 16s; animation-delay: 1s; width: 6px; height: 6px; }
+        #slide-0 .dust:nth-child(5) { left: 65%; animation-duration: 20s; animation-delay: 3s; width: 3px; height: 3px; }
+        #slide-0 .dust:nth-child(6) { left: 78%; animation-duration: 13s; animation-delay: 5s; width: 4px; height: 4px; }
+        #slide-0 .dust:nth-child(7) { left: 90%; animation-duration: 17s; animation-delay: 2.5s; width: 5px; height: 5px; }
+        #slide-0 .dust:nth-child(8) { left: 45%; animation-duration: 15s; animation-delay: 6s; width: 3px; height: 3px; }
 
-    .main-nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .main-nav a { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; padding: 6px 14px; border-radius: 6px; color: var(--text-secondary); transition: all 0.25s ease; border: 1px solid transparent; position: relative; }
-    .main-nav a:hover, .main-nav a.active { color: #fff; background: rgba(255, 23, 68, 0.06); border-color: rgba(255, 23, 68, 0.15); box-shadow: 0 0 24px rgba(255, 23, 68, 0.04); }
-    .main-nav a.active::after { content: ''; position: absolute; bottom: 2px; left: 20%; right: 20%; height: 2px; background: var(--neon-red); box-shadow: 0 0 16px rgba(255, 23, 68, 0.4); border-radius: 2px; }
+        /* Chapter number — large, glowing, with text-shadow animation */
+        #slide-0 .chapter-number {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(3rem, 6vw, 6rem);
+            font-weight: 900;
+            color: var(--gold);
+            letter-spacing: 0.2em;
+            text-shadow: 0 0 40px rgba(201, 168, 76, 0.2), 0 0 80px rgba(201, 168, 76, 0.05);
+            opacity: 0;
+            animation: fadeUpGlow 1.8s 0.3s forwards, glowPulse 3s ease-in-out infinite 2s;
+            position: relative;
+            z-index: 1;
+        }
 
-    .nav-cta { background: linear-gradient(135deg, var(--neon-red), var(--neon-red-dark)) !important; color: #0b0d15 !important; font-weight: 700 !important; border: none !important; padding: 6px 18px !important; border-radius: 8px !important; transition: all 0.3s ease !important; box-shadow: 0 0 30px rgba(255, 23, 68, 0.15); }
-    .nav-cta:hover { transform: scale(1.04); box-shadow: 0 0 50px rgba(255, 23, 68, 0.3) !important; }
+        @keyframes glowPulse {
+            0%, 100% { text-shadow: 0 0 40px rgba(201, 168, 76, 0.2), 0 0 80px rgba(201, 168, 76, 0.05); }
+            50% { text-shadow: 0 0 60px rgba(201, 168, 76, 0.5), 0 0 120px rgba(201, 168, 76, 0.15), 0 0 200px rgba(201, 168, 76, 0.05); }
+        }
 
-    .hamburger { display: none; flex-direction: column; gap: 5px; background: transparent; border: none; padding: 6px; cursor: pointer; border-radius: 6px; transition: background 0.2s; }
-    .hamburger:hover { background: rgba(255, 255, 255, 0.04); }
-    .hamburger span { display: block; width: 26px; height: 2px; background: var(--text-primary); border-radius: 2px; transition: all 0.3s ease; transform-origin: center; }
-    .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-    .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+        /* Title — epic gradient, large, with letter-spacing animation */
+        #slide-0 .chapter-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: clamp(2.8rem, 8vw, 6.5rem);
+            line-height: 1.05;
+            background: linear-gradient(180deg, #f5e6b0 0%, var(--gold) 35%, #a67c2e 70%, #7a5a1a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            animation: fadeUpGlow 1.8s 0.6s forwards, titleShimmer 4s ease-in-out infinite 2s;
+            filter: drop-shadow(0 4px 40px rgba(0, 0, 0, 0.8));
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.04em;
+        }
 
-    /* ===== HERO ===== */
-    .hero { padding: 140px 0 80px; position: relative; overflow: hidden; min-height: 100vh; display: flex; align-items: center; }
-    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 50%, rgba(255, 23, 68, 0.04) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(213, 0, 0, 0.04) 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(255, 109, 0, 0.03) 0%, transparent 50%); pointer-events: none; }
+        @keyframes titleShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
 
-    .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255, 23, 68, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 23, 68, 0.03) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; animation: gridMove 40s linear infinite; }
-    @keyframes gridMove { 0% { transform: translate(0, 0); } 100% { transform: translate(60px, 60px); } }
+        /* Subtitle — with a golden underline bar */
+        #slide-0 .chapter-sub {
+            font-size: clamp(0.75rem, 1.2vw, 1.1rem);
+            font-weight: 300;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            opacity: 0;
+            animation: fadeUpGlow 1.5s 0.9s forwards;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+            position: relative;
+            z-index: 1;
+            margin-top: 0.2rem;
+        }
 
-    .hero-content { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+        #slide-0 .chapter-sub::after {
+            content: '';
+            display: block;
+            width: 120px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 0.6rem auto 0;
+            opacity: 0.5;
+        }
 
-    .hero-text .badge { display: inline-block; font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--neon-red); background: rgba(255, 23, 68, 0.06); border: 1px solid rgba(255, 23, 68, 0.12); padding: 4px 16px; border-radius: 20px; margin-bottom: 20px; backdrop-filter: blur(4px); }
-    .hero-text h1 { font-family: var(--font-display); font-size: clamp(2.6rem, 8vw, 5.2rem); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 16px; }
-    .hero-text h1 .highlight { color: var(--neon-red); text-shadow: 0 0 60px rgba(255, 23, 68, 0.15); display: inline-block; }
-    .hero-text .tagline { font-size: clamp(1rem, 1.4vw, 1.3rem); color: var(--text-secondary); max-width: 480px; margin-bottom: 28px; font-weight: 300; line-height: 1.7; }
-    .hero-text .tagline em { color: var(--neon-orange); font-style: normal; font-weight: 400; }
+        @keyframes fadeUpGlow {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.96);
+                filter: blur(4px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
 
-    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+        /* Begin button — refined with gold border glow and icon */
+        .btn-begin {
+            margin-top: 1.2rem;
+            padding: 0.9rem 3.5rem;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: clamp(0.85rem, 1.1vw, 1.1rem);
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--gold);
+            background: rgba(10, 10, 15, 0.4);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(201, 168, 76, 0.5);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            opacity: 0;
+            animation: fadeUpGlow 1.8s 1.2s forwards;
+            box-shadow: 0 0 40px rgba(201, 168, 76, 0.05), inset 0 0 40px rgba(201, 168, 76, 0.02);
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
 
-    .btn-primary { font-family: var(--font-display); font-weight: 700; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; padding: 14px 34px; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--neon-red), var(--neon-red-dark)); color: #0b0d15; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 40px rgba(255, 23, 68, 0.15); display: inline-flex; align-items: center; gap: 10px; }
-    .btn-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 0 60px rgba(255, 23, 68, 0.25); }
-    .btn-primary:active { transform: scale(0.97); }
+        .btn-begin::before {
+            content: '►';
+            font-size: 0.7rem;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
 
-    .btn-secondary { font-family: var(--font-display); font-weight: 400; font-size: 0.7rem; letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 28px; border-radius: 10px; border: 1px solid rgba(255, 23, 68, 0.15); background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-secondary:hover { border-color: rgba(255, 23, 68, 0.4); color: #fff; background: rgba(255, 23, 68, 0.04); box-shadow: 0 0 30px rgba(255, 23, 68, 0.04); }
+        .btn-begin:hover {
+            background: rgba(201, 168, 76, 0.08);
+            border-color: var(--gold);
+            box-shadow: 0 0 60px rgba(201, 168, 76, 0.2), inset 0 0 60px rgba(201, 168, 76, 0.03);
+            transform: scale(1.04) translateY(-2px);
+            letter-spacing: 0.5em;
+        }
 
-    .hero-cover { display: flex; justify-content: center; align-items: center; perspective: 1200px; }
+        .btn-begin:hover::before {
+            opacity: 1;
+        }
 
-    .mock-magazine { width: 100%; max-width: 380px; aspect-ratio: 3/4; background: linear-gradient(145deg, #1a1f2e, #0f1320); border-radius: 16px; padding: 20px; border: 1px solid rgba(255, 23, 68, 0.1); box-shadow: 0 20px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 23, 68, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.02); transform: rotateY(-4deg) rotateX(2deg); transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); position: relative; overflow: hidden; }
-    .mock-magazine:hover { transform: rotateY(-2deg) rotateX(0deg) scale(1.01); box-shadow: 0 30px 100px rgba(0, 0, 0, 0.7), 0 0 80px rgba(255, 23, 68, 0.06); }
-    .mock-magazine::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 20%, rgba(255, 23, 68, 0.03), transparent 60%), radial-gradient(circle at 70% 80%, rgba(213, 0, 0, 0.03), transparent 50%); pointer-events: none; }
+        /* ---------- CONTENT SLIDES ---------- */
+        .content-slide {
+            padding: 2rem 2.5rem;
+            gap: 0.8rem;
+        }
 
-    .mock-cover-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
-    .mock-cover-top { display: flex; justify-content: space-between; align-items: flex-start; font-family: var(--font-display); font-size: 0.5rem; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(255, 23, 68, 0.06); padding-bottom: 10px; }
-    .mock-cover-top .issue { color: var(--neon-red); opacity: 0.6; }
-    .mock-cover-title { font-family: var(--font-display); font-weight: 900; font-size: clamp(1.6rem, 4vw, 2.8rem); line-height: 1.05; letter-spacing: -0.5px; margin: 16px 0 4px; text-shadow: 0 0 40px rgba(255, 23, 68, 0.05); }
-    .mock-cover-title .highlight { color: var(--neon-red); text-shadow: 0 0 40px rgba(255, 23, 68, 0.15); }
-    .mock-cover-sub { font-family: var(--font-body); font-size: 0.7rem; color: var(--text-secondary); font-weight: 300; letter-spacing: 1px; text-transform: uppercase; opacity: 0.6; margin-bottom: 8px; }
-    .mock-cover-tagline { font-family: var(--font-mono); font-size: 0.65rem; color: var(--neon-orange); background: rgba(255, 109, 0, 0.06); border: 1px solid rgba(255, 109, 0, 0.08); padding: 6px 14px; border-radius: 6px; display: inline-block; margin-top: 4px; letter-spacing: 0.5px; }
-    .mock-cover-features { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255, 23, 68, 0.06); }
-    .mock-cover-features li { list-style: none; font-family: var(--font-body); font-size: 0.6rem; color: var(--text-secondary); padding: 4px 0; display: flex; align-items: center; gap: 10px; font-weight: 300; letter-spacing: 0.3px; }
-    .mock-cover-features li::before { content: '▸'; color: var(--neon-red); opacity: 0.4; font-size: 0.5rem; }
-    .mock-cover-features li strong { color: #fff; font-weight: 600; }
-    .mock-cover-barcode { display: flex; justify-content: flex-end; margin-top: 10px; gap: 2px; }
-    .mock-cover-barcode span { display: block; width: 3px; height: 14px; background: var(--text-muted); opacity: 0.2; border-radius: 1px; }
-    .mock-cover-barcode span:nth-child(2) { height: 18px; }
-    .mock-cover-barcode span:nth-child(4) { height: 10px; }
-    .mock-cover-barcode span:nth-child(6) { height: 20px; }
+        .content-slide .part-label {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.65rem, 1vw, 0.85rem);
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--gold);
+            opacity: 0.7;
+            margin-bottom: 0.2rem;
+        }
 
-    /* ===== TABS ===== */
-    .section-tabs { padding: 60px 0 80px; background: var(--bg-secondary); border-top: 1px solid rgba(255, 23, 68, 0.04); }
-    .tabs-header { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 32px; border-bottom: 1px solid rgba(255, 23, 68, 0.04); padding-bottom: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-    .tabs-header::-webkit-scrollbar { display: none; }
-    .tab-btn { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; padding: 10px 20px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.25s ease; border-radius: 8px; white-space: nowrap; border: 1px solid transparent; flex-shrink: 0; }
-    .tab-btn:hover { color: var(--text-secondary); background: rgba(255, 23, 68, 0.02); }
-    .tab-btn.active { color: #fff; background: rgba(255, 23, 68, 0.06); border-color: rgba(255, 23, 68, 0.12); box-shadow: 0 0 30px rgba(255, 23, 68, 0.02); }
-    .tab-btn .badge-tab { display: inline-block; font-size: 0.45rem; background: rgba(255, 23, 68, 0.08); padding: 0 8px; border-radius: 10px; color: var(--neon-red); margin-left: 4px; opacity: 0.6; }
-    .tab-panel { display: none; animation: fadeInTab 0.35s ease; }
-    .tab-panel.active { display: block; }
-    @keyframes fadeInTab { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .tab-panel .panel-title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
-    .tab-panel .panel-title .highlight { color: var(--neon-red); }
-    .tab-panel .panel-desc { color: var(--text-secondary); font-weight: 300; margin-bottom: 24px; font-size: 0.95rem; }
-    .list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-    .list-item { background: var(--bg-card); border-radius: var(--radius); padding: 18px 20px; border: 1px solid rgba(255, 23, 68, 0.04); transition: all 0.3s ease; cursor: pointer; }
-    .list-item:hover { background: var(--bg-card-hover); border-color: rgba(255, 23, 68, 0.08); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); }
-    .list-item .item-title { font-family: var(--font-display); font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
-    .list-item .item-title .emoji { font-size: 1rem; filter: drop-shadow(0 0 8px rgba(255, 23, 68, 0.05)); }
-    .list-item .item-meta { font-family: var(--font-mono); font-size: 0.5rem; text-transform: uppercase; letter-spacing: 1px; color: var(--neon-red); opacity: 0.4; margin-bottom: 4px; }
-    .list-item .item-desc { font-size: 0.8rem; color: var(--text-secondary); font-weight: 300; line-height: 1.5; }
-    .list-item .item-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.45rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neon-orange); opacity: 0.3; margin-top: 6px; border-top: 1px solid rgba(255, 23, 68, 0.02); padding-top: 6px; }
+        .content-slide .part-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.1rem, 2vw, 1.6rem);
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
 
-    /* ===== SECTION: CATEGORIES ===== */
-    .section-categories { padding: 80px 0 60px; background: var(--bg-secondary); border-top: 1px solid rgba(255, 23, 68, 0.04); border-bottom: 1px solid rgba(255, 23, 68, 0.04); }
-    .section-title { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900; letter-spacing: -0.5px; margin-bottom: 8px; }
-    .section-title .highlight { color: var(--neon-red); text-shadow: 0 0 40px rgba(255, 23, 68, 0.08); }
-    .section-desc { color: var(--text-secondary); font-size: 1rem; max-width: 600px; font-weight: 300; margin-bottom: 40px; }
-    .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
-    .category-card { background: var(--bg-card); border-radius: var(--radius); padding: 28px 24px; border: 1px solid rgba(255, 23, 68, 0.04); transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; position: relative; overflow: hidden; }
-    .category-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255, 23, 68, 0.02), transparent); opacity: 0; transition: opacity 0.4s; }
-    .category-card:hover { transform: translateY(-6px); border-color: rgba(255, 23, 68, 0.12); background: var(--bg-card-hover); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
-    .category-card:hover::before { opacity: 1; }
-    .category-card .emoji { font-size: 2.2rem; display: block; margin-bottom: 12px; filter: drop-shadow(0 0 20px rgba(255, 23, 68, 0.05)); }
-    .category-card h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .category-card p { font-size: 0.85rem; color: var(--text-secondary); font-weight: 300; line-height: 1.6; }
-    .category-card .card-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.5rem; text-transform: uppercase; letter-spacing: 1px; color: var(--neon-red); opacity: 0.4; margin-top: 12px; border-top: 1px solid rgba(255, 23, 68, 0.04); padding-top: 12px; }
+        .content-slide .story-text {
+            font-size: clamp(0.9rem, 1.3vw, 1.15rem);
+            line-height: 1.9;
+            font-weight: 300;
+            color: var(--text);
+            text-align: left;
+            max-width: 720px;
+            width: 100%;
+            max-height: 55vh;
+            overflow-y: auto;
+            padding: 0.5rem 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--gold) transparent;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
 
-    /* ===== SECTION: FEATURED STORIES ===== */
-    .section-featured { padding: 80px 0 60px; }
-    .stories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; margin-top: 16px; }
-    .story-card { background: var(--bg-card); border-radius: var(--radius); padding: 28px 24px; border: 1px solid rgba(255, 23, 68, 0.04); transition: all 0.35s ease; cursor: pointer; position: relative; }
-    .story-card:hover { transform: translateY(-4px); border-color: rgba(255, 23, 68, 0.1); background: var(--bg-card-hover); box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25); }
-    .story-card .story-number { font-family: var(--font-display); font-size: 0.5rem; letter-spacing: 2px; color: var(--neon-red); opacity: 0.3; margin-bottom: 6px; }
-    .story-card h4 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; line-height: 1.3; margin-bottom: 6px; }
-    .story-card .story-category { font-family: var(--font-mono); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--neon-orange); opacity: 0.6; margin-bottom: 10px; display: inline-block; background: rgba(255, 109, 0, 0.04); padding: 2px 12px; border-radius: 12px; border: 1px solid rgba(255, 109, 0, 0.04); }
-    .story-card p { font-size: 0.85rem; color: var(--text-secondary); font-weight: 300; line-height: 1.6; }
-    .story-card .read-more { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-display); font-size: 0.55rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--neon-red); opacity: 0.5; margin-top: 14px; transition: all 0.3s; }
-    .story-card:hover .read-more { opacity: 1; gap: 12px; }
+        .content-slide .story-text::-webkit-scrollbar {
+            width: 4px;
+        }
+        .content-slide .story-text::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .content-slide .story-text::-webkit-scrollbar-thumb {
+            background: var(--gold);
+            border-radius: 4px;
+        }
 
-    /* ===== SECTION: EDITOR'S LETTER ===== */
-    .section-editor { padding: 80px 0 60px; background: var(--bg-secondary); border-top: 1px solid rgba(255, 23, 68, 0.04); border-bottom: 1px solid rgba(255, 23, 68, 0.04); }
-    .editor-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
-    .editor-avatar { display: flex; justify-content: center; align-items: center; }
-    .editor-avatar .avatar-box { width: 100%; max-width: 280px; aspect-ratio: 1/1; background: linear-gradient(145deg, #1a1f2e, #0f1320); border-radius: 20px; border: 1px solid rgba(255, 23, 68, 0.06); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); position: relative; overflow: hidden; }
-    .editor-avatar .avatar-box::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 30%, rgba(255, 23, 68, 0.03), transparent 70%); }
-    .editor-avatar .avatar-icon { font-size: 4.5rem; filter: drop-shadow(0 0 40px rgba(255, 23, 68, 0.05)); position: relative; z-index: 1; }
-    .editor-avatar .avatar-name { font-family: var(--font-display); font-size: 1rem; font-weight: 700; margin-top: 12px; position: relative; z-index: 1; }
-    .editor-avatar .avatar-title { font-family: var(--font-body); font-size: 0.7rem; color: var(--text-muted); font-weight: 300; position: relative; z-index: 1; }
-    .editor-text .letter-excerpt { font-size: 1.05rem; color: var(--text-secondary); font-weight: 300; line-height: 1.8; margin-bottom: 20px; }
-    .editor-text .letter-excerpt strong { color: var(--text-primary); font-weight: 400; }
-    .editor-text .letter-signoff { font-family: var(--font-mono); font-size: 0.8rem; color: var(--neon-red); opacity: 0.5; margin-top: 8px; }
-    .btn-read-letter { margin-top: 12px; }
+        /* ---------- NARRATOR BAR ---------- */
+        .narrator-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.8s ease;
+            width: 100%;
+            max-width: 500px;
+            justify-content: center;
+            margin-top: 0.3rem;
+        }
 
-    /* ===== SECTION: BLUEPRINT ===== */
-    .section-blueprint { padding: 80px 0 60px; }
-    .blueprint-showcase { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; align-items: start; }
-    .blueprint-visual { background: var(--bg-card); border-radius: var(--radius); padding: 30px; border: 1px solid rgba(255, 23, 68, 0.04); min-height: 280px; display: flex; flex-direction: column; justify-content: center; }
-    .blueprint-visual .bp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px 0; }
-    .blueprint-visual .bp-cell { aspect-ratio: 1/1; background: rgba(255, 23, 68, 0.03); border: 1px solid rgba(255, 23, 68, 0.04); border-radius: 4px; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: var(--text-muted); font-family: var(--font-mono); cursor: pointer; }
-    .blueprint-visual .bp-cell:hover { background: rgba(255, 23, 68, 0.06); border-color: rgba(255, 23, 68, 0.15); transform: scale(1.04); box-shadow: 0 0 30px rgba(255, 23, 68, 0.04); }
-    .blueprint-visual .bp-cell.active { background: rgba(255, 23, 68, 0.08); border-color: var(--neon-red); box-shadow: 0 0 30px rgba(255, 23, 68, 0.06); }
-    .blueprint-info h4 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
-    .blueprint-info p { color: var(--text-secondary); font-weight: 300; line-height: 1.7; font-size: 0.95rem; }
-    .blueprint-info .bp-meta { font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-muted); margin-top: 12px; display: flex; gap: 20px; flex-wrap: wrap; }
-    .blueprint-info .bp-meta span { display: flex; align-items: center; gap: 6px; }
+        .narrator-bar.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-    /* ===== FOOTER ===== */
-    .site-footer { padding: 40px 0 30px; border-top: 1px solid rgba(255, 23, 68, 0.04); background: var(--bg-secondary); }
-    .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
-    .footer-brand { font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
-    .footer-brand .highlight { color: var(--neon-red); }
-    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
-    .footer-links a { font-size: 0.7rem; color: var(--text-muted); transition: color 0.3s; font-weight: 300; }
-    .footer-links a:hover { color: var(--text-primary); }
-    .footer-copy { font-size: 0.6rem; color: var(--text-muted); opacity: 0.4; font-weight: 300; }
+        .narrator-bar .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--gold);
+            flex-shrink: 0;
+            animation: pulseDot 1.2s ease-in-out infinite;
+        }
+        .narrator-bar .dot.paused {
+            animation: none;
+            opacity: 0.3;
+        }
 
-    /* ===== MODAL ===== */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
-    .modal-overlay.open { display: flex; }
-    .modal-box { background: var(--bg-secondary); border: 1px solid rgba(255, 23, 68, 0.06); border-radius: 20px; max-width: 640px; width: 100%; padding: 40px 36px; max-height: 90vh; overflow-y: auto; box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6); animation: slideUp 0.35s cubic-bezier(0.23, 1, 0.32, 1); position: relative; }
-    .modal-box .modal-close { position: absolute; top: 16px; right: 20px; background: transparent; border: none; color: var(--text-muted); font-size: 1.8rem; cursor: pointer; transition: all 0.3s; padding: 4px 10px; border-radius: 6px; line-height: 1; }
-    .modal-box .modal-close:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
-    .modal-box h2 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; padding-right: 30px; }
-    .modal-box h2 .highlight { color: var(--neon-red); }
-    .modal-box .modal-sub { color: var(--text-secondary); font-weight: 300; margin-bottom: 20px; font-size: 0.9rem; }
-    .modal-box .modal-body { color: var(--text-secondary); font-weight: 300; line-height: 1.8; font-size: 0.95rem; }
-    .modal-box .modal-body p { margin-bottom: 14px; }
-    .modal-box .modal-body strong { color: var(--text-primary); font-weight: 400; }
-    .modal-box .modal-body .signoff { font-family: var(--font-mono); color: var(--neon-red); opacity: 0.5; font-size: 0.8rem; margin-top: 16px; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .narrator-bar .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            font-weight: 300;
+        }
 
-    /* ===== AGE GATE OVERLAY ===== */
-    #ageGate { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(11, 13, 21, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); opacity: 0; visibility: hidden; transition: opacity 0.8s ease, visibility 0.8s ease; cursor: pointer; }
-    #ageGate.visible { opacity: 1; visibility: visible; }
-    #ageGate .age-box { max-width: 520px; width: 90%; padding: 48px 36px; text-align: center; background: rgba(26, 31, 46, 0.6); border: 1px solid rgba(255, 23, 68, 0.15); border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6), 0 0 80px rgba(255, 23, 68, 0.03); transform: scale(0.95); transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); cursor: default; }
-    #ageGate.visible .age-box { transform: scale(1); }
-    #ageGate .age-icon { font-size: 4rem; display: block; margin-bottom: 12px; filter: drop-shadow(0 0 40px rgba(255, 23, 68, 0.08)); }
-    #ageGate .age-title { font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; color: #fff; margin-bottom: 4px; }
-    #ageGate .age-title .highlight { color: var(--neon-red); text-shadow: 0 0 40px rgba(255, 23, 68, 0.15); }
-    #ageGate .age-sub { font-family: var(--font-body); font-size: 1rem; color: var(--text-secondary); font-weight: 300; margin-bottom: 24px; line-height: 1.6; }
-    #ageGate .age-sub strong { color: var(--text-primary); font-weight: 400; }
-    #ageGate .age-hint { font-family: var(--font-mono); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); opacity: 0.4; border-top: 1px solid rgba(255, 23, 68, 0.04); padding-top: 16px; margin-top: 4px; animation: pulseHint 2.5s ease-in-out infinite; }
-    @keyframes pulseHint { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.7; } }
-    #ageGate .age-divider { width: 60px; height: 2px; background: linear-gradient(90deg, transparent, var(--neon-red), transparent); margin: 16px auto 20px; border-radius: 2px; opacity: 0.3; }
+        .narrator-bar .wave {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+            height: 24px;
+            max-width: 120px;
+        }
 
-    /* ===== VISIBLE VIDEO PLAYER (FLOATING) ===== */
-    #video-container {
-      position: fixed; bottom: 20px; right: 20px; width: 320px; height: 180px; z-index: 5000;
-      border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 23, 68, 0.15); background: #000;
-      /* Hidden initially but keeps dimensions so YouTube API loads properly */
-      visibility: hidden; opacity: 0; pointer-events: none;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-    #video-container.visible { visibility: visible; opacity: 1; pointer-events: auto; }
-    #video-container iframe { width: 100%; height: 100%; border: none; }
+        .narrator-bar .wave span {
+            display: block;
+            width: 3px;
+            background: var(--gold);
+            border-radius: 2px;
+            height: 4px;
+            animation: waveAnim 0.8s ease-in-out infinite alternate;
+        }
 
-    @media (max-width: 640px) {
-      #video-container { width: 200px; height: 112px; bottom: 10px; right: 10px; }
-    }
+        .narrator-bar .wave span:nth-child(2) { animation-delay: 0.1s; height: 8px; }
+        .narrator-bar .wave span:nth-child(3) { animation-delay: 0.2s; height: 14px; }
+        .narrator-bar .wave span:nth-child(4) { animation-delay: 0.3s; height: 18px; }
+        .narrator-bar .wave span:nth-child(5) { animation-delay: 0.4s; height: 14px; }
+        .narrator-bar .wave span:nth-child(6) { animation-delay: 0.5s; height: 8px; }
+        .narrator-bar .wave span:nth-child(7) { animation-delay: 0.6s; height: 4px; }
 
-    /* ===== TOAST ===== */
-    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--bg-card); border: 1px solid rgba(255, 23, 68, 0.08); padding: 12px 28px; border-radius: 12px; font-size: 0.8rem; color: var(--text-secondary); z-index: 3000; opacity: 0; transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); pointer-events: none; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); font-weight: 300; text-align: center; max-width: 90%; }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .toast .emoji { margin-right: 8px; }
+        .narrator-bar .wave.paused span {
+            animation: none;
+            height: 4px !important;
+            opacity: 0.2;
+        }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 1024px) {
-      .hero-content { grid-template-columns: 1fr; gap: 40px; text-align: center; }
-      .hero-text .tagline { margin-left: auto; margin-right: auto; }
-      .hero-actions { justify-content: center; }
-      .editor-layout { grid-template-columns: 1fr; text-align: center; }
-      .blueprint-showcase { grid-template-columns: 1fr; }
-      .mock-magazine { max-width: 280px; transform: none; margin: 0 auto; }
-      .mock-magazine:hover { transform: scale(1.01); }
-      .list-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-      #ageGate .age-box { padding: 36px 24px; }
-      #ageGate .age-title { font-size: 1.5rem; }
-    }
+        /* ---------- CONTINUE BUTTON ---------- */
+        .btn-continue {
+            font-family: 'Cinzel', serif;
+            font-weight: 400;
+            font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            background: transparent;
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            border-radius: 30px;
+            padding: 0.6rem 2.2rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.6s ease;
+            margin-top: 0.3rem;
+        }
 
-    @media (max-width: 768px) {
-      .header-inner { flex-wrap: nowrap; }
-      .main-nav { display: none; flex-direction: column; width: 100%; background: var(--bg-primary); padding: 20px 16px; border-radius: 12px; border: 1px solid rgba(255, 23, 68, 0.04); margin-top: 12px; gap: 4px; }
-      .main-nav.open { display: flex; }
-      .main-nav a { width: 100%; text-align: center; padding: 10px; font-size: 0.65rem; }
-      .main-nav a.active::after { display: none; }
-      .nav-cta { width: 100%; text-align: center; }
-      .hamburger { display: flex; }
-      .hero { padding: 120px 0 60px; min-height: auto; }
-      .category-grid { grid-template-columns: 1fr 1fr; }
-      .stories-grid { grid-template-columns: 1fr; }
-      .modal-box { padding: 28px 20px; }
-      .modal-box h2 { font-size: 1.3rem; }
-      .footer-inner { flex-direction: column; text-align: center; }
-      .blueprint-visual .bp-grid { grid-template-columns: repeat(3, 1fr); }
-      .tabs-header { gap: 4px; }
-      .tab-btn { font-size: 0.5rem; padding: 8px 14px; }
-      .list-grid { grid-template-columns: 1fr; }
-      .tab-panel .panel-title { font-size: 1.1rem; }
-      #ageGate .age-box { padding: 28px 20px; }
-      #ageGate .age-title { font-size: 1.3rem; }
-      #ageGate .age-icon { font-size: 3rem; }
-    }
+        .btn-continue.visible {
+            opacity: 1;
+        }
 
-    @media (max-width: 480px) {
-      .category-grid { grid-template-columns: 1fr; }
-      .brand { font-size: 0.95rem; }
-      .brand .icon { font-size: 1.4rem; }
-      .mock-magazine { max-width: 220px; padding: 14px; }
-      .mock-cover-title { font-size: 1.4rem; }
-      .mock-cover-features li { font-size: 0.5rem; }
-      .btn-primary, .btn-secondary { padding: 12px 20px; font-size: 0.65rem; width: 100%; justify-content: center; }
-      .hero-actions { flex-direction: column; width: 100%; }
-      .hero-actions .btn-primary, .hero-actions .btn-secondary { width: 100%; }
-      #ageGate .age-box { padding: 24px 16px; }
-      #ageGate .age-title { font-size: 1.1rem; }
-      #ageGate .age-sub { font-size: 0.85rem; }
-    }
-  </style>
+        .btn-continue:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(201, 168, 76, 0.05);
+            box-shadow: 0 0 30px rgba(201, 168, 76, 0.1);
+        }
+
+        /* ---------- SKIP BUTTON ---------- */
+        #skipBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            opacity: 0.01;
+            z-index: 999;
+            border-radius: 50%;
+            transition: opacity 0.3s ease;
+        }
+        #skipBtn:hover {
+            opacity: 0.08;
+            background: rgba(201, 168, 76, 0.15);
+        }
+        #skipBtn::after {
+            content: '⏭';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: var(--gold);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #skipBtn:hover::after {
+            opacity: 0.3;
+        }
+
+        /* ---------- FINAL OVERLAY ---------- */
+        #final-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0f;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 2s ease, visibility 2s ease;
+            gap: 1.5rem;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        #final-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        #final-overlay .final-label {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.5rem, 3vw, 3rem);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gold);
+            text-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            animation: fadeUp 1.2s 0.5s forwards;
+        }
+
+        #final-overlay .final-sub {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(0.9rem, 1.2vw, 1.2rem);
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            max-width: 600px;
+            opacity: 0;
+            animation: fadeUp 1.2s 1s forwards;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+            line-height: 1.6;
+        }
+
+        #final-overlay .final-invite {
+            margin-top: 0.5rem;
+            padding: 0.9rem 2.8rem;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: clamp(0.85rem, 1.1vw, 1.1rem);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #fff;
+            background: linear-gradient(135deg, #5865f2, #4752c4);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 0 40px rgba(88, 101, 242, 0.3);
+            text-decoration: none;
+            display: inline-block;
+            opacity: 0;
+            animation: fadeUp 1.2s 1.5s forwards;
+        }
+
+        #final-overlay .final-invite:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 70px rgba(88, 101, 242, 0.5);
+        }
+
+        #final-overlay .final-invite::before {
+            content: '💬 ';
+        }
+
+        /* ---------- MUSIC INDICATOR ---------- */
+        #music-indicator {
+            position: fixed;
+            bottom: 6px;
+            left: 8px;
+            z-index: 999;
+            color: var(--text-dim);
+            font-size: 0.45rem;
+            letter-spacing: 0.05em;
+            opacity: 0.12;
+            font-family: 'Inter', sans-serif;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #music-indicator.active {
+            opacity: 0.2;
+        }
+        #music-indicator .vol-bar {
+            display: inline-block;
+            width: 24px;
+            height: 2px;
+            background: rgba(201, 168, 76, 0.15);
+            border-radius: 1px;
+            margin-left: 4px;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+        #music-indicator .vol-bar .vol-fill {
+            height: 100%;
+            width: 20%;
+            background: var(--gold);
+            border-radius: 1px;
+            transition: width 0.5s ease;
+        }
+
+        /* ---------- ANIMATIONS ---------- */
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseDot {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes waveAnim {
+            0% {
+                transform: scaleY(0.3);
+            }
+            100% {
+                transform: scaleY(1);
+            }
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 600px) {
+            .slide {
+                padding: 1.5rem;
+            }
+            .content-slide .story-text {
+                font-size: 0.9rem;
+                max-height: 45vh;
+                padding: 0.3rem 0.5rem;
+            }
+            #slide-0 .chapter-title {
+                font-size: 2.8rem;
+            }
+            #slide-0 .chapter-number {
+                font-size: 2.8rem;
+            }
+            .btn-begin, .btn-continue {
+                padding: 0.5rem 1.5rem;
+                font-size: 0.6rem;
+            }
+            #skipBtn {
+                bottom: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+            }
+            #music-indicator {
+                font-size: 0.4rem;
+                bottom: 4px;
+                left: 6px;
+            }
+            #youtube-container {
+                width: 44px;
+                height: 25px;
+                bottom: 8px;
+                right: 8px;
+            }
+            .narrator-bar .label {
+                font-size: 0.55rem;
+            }
+            .narrator-bar .wave {
+                max-width: 80px;
+            }
+            #slide-0 .chapter-sub::after {
+                width: 80px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .slide {
+                padding: 1rem;
+            }
+            #slide-0 .chapter-title {
+                font-size: 2.2rem;
+            }
+            #slide-0 .chapter-number {
+                font-size: 2.2rem;
+            }
+            .content-slide .story-text {
+                font-size: 0.8rem;
+                max-height: 40vh;
+            }
+            #youtube-container {
+                width: 36px;
+                height: 20px;
+                bottom: 6px;
+                right: 6px;
+            }
+            #slide-0 .chapter-sub::after {
+                width: 60px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- ===== AGE GATE OVERLAY ===== -->
-  <div id="ageGate">
-    <div class="age-box">
-      <span class="age-icon">🔞</span>
-      <div class="age-title">
-        <span class="highlight">21</span>+ Only
-      </div>
-      <div class="age-divider"></div>
-      <div class="age-sub">
-        <strong>Trade Former</strong> contains mature speculative content.<br />
-        Please confirm you are <strong>21 years of age or older</strong>.
-      </div>
-      <div class="age-hint">✦ Tap anywhere to enter ✦</div>
+    <!-- ====== CANVASES ====== -->
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- ====== MUSIC INDICATOR ====== -->
+    <div id="music-indicator">
+        <span id="musicLabel">♪</span>
+        <span class="vol-bar"><span class="vol-fill" id="volFill" style="width:20%"></span></span>
     </div>
-  </div>
 
-  <!-- ===== VISIBLE VIDEO PLAYER (hidden initially) ===== -->
-  <div id="video-container">
-    <div id="player-container"></div>
-  </div>
-
-  <!-- ===== HEADER ===== -->
-  <header class="site-header" id="siteHeader">
-    <div class="container header-inner">
-      <div class="brand">
-        <span class="icon">👾</span>
-        <div>
-          <span class="highlight">Trade</span>Former
-          <span class="sub">Gaming Magazine</span>
-        </div>
-      </div>
-
-      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
-      </button>
-
-      <nav class="main-nav" id="mainNav">
-        <a href="#" class="active" data-section="home">Home</a>
-        <a href="#categories" data-section="categories">Sections</a>
-        <a href="#tabs" data-section="tabs">Index</a>
-        <a href="#stories" data-section="stories">Stories</a>
-        <a href="#editor" data-section="editor">Editor</a>
-        <a href="#blueprint" data-section="blueprint">Blueprint</a>
-        <a href="#" class="nav-cta" id="navCta">Subscribe</a>
-      </nav>
+    <!-- ====== YOUTUBE PLAYER ====== -->
+    <div id="youtube-container">
+        <div id="youtube-player"></div>
     </div>
-  </header>
 
-  <!-- ===== HERO ===== -->
-  <section class="hero" id="home">
-    <div class="hero-grid"></div>
-    <div class="container hero-content">
-      <div class="hero-text">
-        <div class="badge">✦ Issue #01 — Launch</div>
-        <h1>
-          The <span class="highlight">Former</span><br />
-          Future of Play
-        </h1>
-        <p class="tagline">
-          <em>Trade Former</em> is a magazine about the games that never were —
-          fictional mechanics, unmade worlds, and the speculative trade of
-          brilliant ideas.
-        </p>
-        <div class="hero-actions">
-          <button class="btn-primary" id="exploreBtn">
-            ✦ Explore Issue #01
-          </button>
-          <button class="btn-secondary" id="letterBtn">
-            📖 Editor's Letter
-          </button>
-        </div>
-      </div>
+    <!-- ====== SLIDE 0: CINEMATIC TITLE CARD ====== -->
+    <div id="slide-0" class="slide active">
+        <!-- Floating golden dust particles -->
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
+        <div class="dust"></div>
 
-      <div class="hero-cover">
-        <div class="mock-magazine" id="magCover">
-          <div class="mock-cover-content">
-            <div class="mock-cover-top">
-              <span>TRADE FORMER</span>
-              <span class="issue">#01</span>
-            </div>
-            <div>
-              <div class="mock-cover-sub">✦ The Blueprint</div>
-              <div class="mock-cover-title">
-                <span class="highlight">ECHO</span>SHIFT
-              </div>
-              <div class="mock-cover-tagline">"A stealth-action game played entirely through sound."</div>
-            </div>
-            <div class="mock-cover-features">
-              <li><strong>Alpha Build</strong> — The lore of a dying star</li>
-              <li><strong>Pitch Meeting</strong> — "What if Sega launched a console in 2006?"</li>
-              <li><strong>Alternate History</strong> — The Dreamcast 2</li>
-              <div class="mock-cover-barcode">
+        <div class="chapter-number">II</div>
+        <div class="chapter-title">The Watcher's Pursuit</div>
+        <div class="chapter-sub">The Age of Black Fire · Chapter 2</div>
+        <button class="btn-begin" id="btnBegin">Begin</button>
+    </div>
+
+    <!-- ====== SLIDES 1–16: EACH PART ====== -->
+    <div id="slide-1" class="slide content-slide">
+        <div class="part-label">Part 1</div>
+        <div class="part-title">The Watcher's Beginning</div>
+        <div class="narrator-bar" id="narrator1">
+            <span class="dot" id="dot1"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave1">
                 <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
+        <div class="story-text" id="text1"></div>
+        <button class="btn-continue" id="continue1">Continue →</button>
     </div>
-  </section>
 
-  <!-- ===== CATEGORIES ===== -->
-  <section class="section-categories" id="categories">
-    <div class="container">
-      <div class="section-tag">Sections</div>
-      <h2 class="section-title">
-        Core <span class="highlight">Magazine</span> Sections
-      </h2>
-      <p class="section-desc">
-        Four pillars of speculative game design — from blueprints to alternate
-        histories.
-      </p>
-
-      <div class="category-grid" id="categoryGrid">
-        <div class="category-card" data-category="blueprint">
-          <span class="emoji">📐</span>
-          <h3>The Blueprint</h3>
-          <p>Deep dives into fictional mechanics with mock UIs, button layouts, and system designs.</p>
-          <span class="card-tag">✦ 4 articles</span>
+    <div id="slide-2" class="slide content-slide">
+        <div class="part-label">Part 2</div>
+        <div class="part-title">The Search Begins</div>
+        <div class="narrator-bar" id="narrator2">
+            <span class="dot" id="dot2"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave2">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
         </div>
-        <div class="category-card" data-category="alpha">
-          <span class="emoji">⚡</span>
-          <h3>Alpha Build</h3>
-          <p>Wild character designs, fictional lore bibles, and imaginary world maps.</p>
-          <span class="card-tag">✦ 6 articles</span>
-        </div>
-        <div class="category-card" data-category="pitch">
-          <span class="emoji">🎯</span>
-          <h3>Pitch Meeting</h3>
-          <p>High-concept ideas presented as if pitching to a room of major studio executives.</p>
-          <span class="card-tag">✦ 3 articles</span>
-        </div>
-        <div class="category-card" data-category="alt">
-          <span class="emoji">🕹️</span>
-          <h3>Alternate History</h3>
-          <p>"What if?" scenarios — like a Sega-produced console succeeding in 2006.</p>
-          <span class="card-tag">✦ 5 articles</span>
-        </div>
-      </div>
+        <div class="story-text" id="text2"></div>
+        <button class="btn-continue" id="continue2">Continue →</button>
     </div>
-  </section>
 
-  <!-- ===== TABS SECTION ===== -->
-  <section class="section-tabs" id="tabs">
-    <div class="container">
-      <div class="section-tag">The Index</div>
-      <h2 class="section-title">
-        <span class="highlight">Speculative</span> Archive
-      </h2>
-      <p class="section-desc">
-        A comprehensive index of far-future titles, speculative industry shifts,
-        and deep-horizon community concepts.
-      </p>
-
-      <!-- Tab Buttons -->
-      <div class="tabs-header" id="tabsHeader">
-        <button class="tab-btn active" data-tab="tab-games1">
-          🎮 2028–2032
-          <span class="badge-tab">7</span>
-        </button>
-        <button class="tab-btn" data-tab="tab-games2">
-          🚀 2035+
-          <span class="badge-tab">6</span>
-        </button>
-        <button class="tab-btn" data-tab="tab-games3">
-          🔮 Extreme
-          <span class="badge-tab">4</span>
-        </button>
-        <button class="tab-btn" data-tab="tab-consoles">
-          🎮 Consoles
-          <span class="badge-tab">8</span>
-        </button>
-        <button class="tab-btn" data-tab="tab-apps">
-          📱 Apps & Services
-          <span class="badge-tab">5</span>
-        </button>
-        <button class="tab-btn" data-tab="tab-accessories">
-          🥽 Accessories
-          <span class="badge-tab">4</span>
-        </button>
-      </div>
-
-      <!-- Tab Panels -->
-      <div class="tab-panel active" id="tab-games1">
-        <div class="panel-title">The <span class="highlight">2028–2032</span> Horizon</div>
-        <div class="panel-desc">The next-gen launch window — confirmed IPs and inevitable sequels defining the transition to PlayStation 6 and Next Xbox.</div>
-        <div class="list-grid">
-          <div class="list-item" data-item="Fallout 5"><div class="item-title"><span class="emoji">☢️</span> Fallout 5</div><div class="item-meta">Bethesda · 2032–2033</div><div class="item-desc">Todd Howard's next project after TES VI. A submerged New Orleans or frozen Chicago wasteland.</div><div class="item-tag">✦ Open World · RPG</div></div>
-          <div class="list-item" data-item="Subnautica Sequel"><div class="item-title"><span class="emoji">🌊</span> Subnautica Sequel</div><div class="item-meta">Unknown Worlds · 2031</div><div class="item-desc">Deep-trench engines requiring dynamic pressure-physics rendering for true next-gen underwater exploration.</div><div class="item-tag">✦ Survival · Exploration</div></div>
-          <div class="list-item" data-item="Kingdom Hearts IV & V"><div class="item-title"><span class="emoji">🗝️</span> Kingdom Hearts IV &amp; V</div><div class="item-meta">Square Enix · 2030+</div><div class="item-desc">Fictional worlds based on modern entertainment properties Disney hasn't fully integrated into gaming.</div><div class="item-tag">✦ Action RPG · Crossover</div></div>
-          <div class="list-item" data-item="Grand Theft Auto VII"><div class="item-title"><span class="emoji">🚗</span> Grand Theft Auto VII</div><div class="item-meta">Rockstar · 2037–2039</div><div class="item-desc">A fully simulated, multi-state digital ecosystem — two decades of evolution from GTA VI.</div><div class="item-tag">✦ Open World · Crime</div></div>
-          <div class="list-item" data-item="Elden Ring 2"><div class="item-title"><span class="emoji">⚔️</span> Elden Ring 2 / Successor</div><div class="item-meta">FromSoftware · 2029–2031</div><div class="item-desc">A true successor to the open-world formula, anchoring the next console generation.</div><div class="item-tag">✦ Soulslike · Open World</div></div>
-          <div class="list-item" data-item="Marvel's X-Men"><div class="item-title"><span class="emoji">🦸</span> Marvel's X-Men</div><div class="item-meta">Insomniac · Late 2020s – Early 2030s</div><div class="item-desc">Massive team-based mutant game with seamless hot-swapping between four active heroes mid-combo.</div><div class="item-tag">✦ Action · Team Combat</div></div>
-          <div class="list-item" data-item="Naughty Dog Franchise"><div class="item-title"><span class="emoji">🎬</span> Next Naughty Dog IP</div><div class="item-meta">Naughty Dog · 2030–2032</div><div class="item-desc">Moving past The Last of Us — a new sci-fi or fantasy IP reaching peak expansion.</div><div class="item-tag">✦ Narrative · Action</div></div>
+    <div id="slide-3" class="slide content-slide">
+        <div class="part-label">Part 3</div>
+        <div class="part-title">The Eyes of Galaxies</div>
+        <div class="narrator-bar" id="narrator3">
+            <span class="dot" id="dot3"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave3">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
         </div>
-      </div>
-
-      <div class="tab-panel" id="tab-games2">
-        <div class="panel-title">The <span class="highlight">2035+</span> Speculative Genre Index</div>
-        <div class="panel-desc">Entirely conceptual, futuristic game ideas built around technologies that are currently theoretical or in early R&amp;D.</div>
-        <div class="list-grid">
-          <div class="list-item" data-item="Project Lightyear"><div class="item-title"><span class="emoji">🌌</span> Project Lightyear</div><div class="item-meta">Persistent Cosmic Simulator</div><div class="item-desc">Space exploration where traveling between solar systems takes real-world months. Manage multi-generational colony ships.</div><div class="item-tag">✦ Simulation · Strategy</div></div>
-          <div class="list-item" data-item="Dysonsphere Architect"><div class="item-title"><span class="emoji">☀️</span> Dysonsphere Architect</div><div class="item-meta">Macro-engineering Simulator</div><div class="item-desc">Harvest entire solar systems to build megastructures using cloud engines capable of quantum-scale physics.</div><div class="item-tag">✦ Strategy · Engineering</div></div>
-          <div class="list-item" data-item="The Actor Engine"><div class="item-title"><span class="emoji">🎭</span> The Actor Engine</div><div class="item-meta">Dynamic Identity Sandbox</div><div class="item-desc">Detective RPG where every NPC has a unique psychological trauma — use vocal stress analysis to interrogate.</div><div class="item-tag">✦ RPG · Detective</div></div>
-          <div class="list-item" data-item="Echo Chambers"><div class="item-title"><span class="emoji">🧠</span> Echo Chambers</div><div class="item-meta">Psychological Thriller</div><div class="item-desc">Level design and soundscape shift based on biometric data from your smart-watch or fitness tracker.</div><div class="item-tag">✦ Thriller · Adaptive</div></div>
-          <div class="list-item" data-item="Faultline"><div class="item-title"><span class="emoji">🏗️</span> Faultline</div><div class="item-meta">Real-Time Structural Deconstruction</div><div class="item-desc">Competitive multiplayer shooter in a fully destructible, architecturally accurate skyscraper.</div><div class="item-tag">✦ Shooter · Destruction</div></div>
-          <div class="list-item" data-item="Deep Earth"><div class="item-title"><span class="emoji">⛏️</span> Deep Earth</div><div class="item-meta">Mining &amp; Survival</div><div class="item-desc">Geology acts like real-world earth — incorrect digging causes cave-ins, gas leaks, and tectonic shifts.</div><div class="item-tag">✦ Survival · Simulation</div></div>
-        </div>
-      </div>
-
-      <div class="tab-panel" id="tab-games3">
-        <div class="panel-title">The <span class="highlight">Extreme</span> Fiction Wishlist</div>
-        <div class="panel-desc">Cultural concepts the community fantasizes about — requiring leaps in computing power, licensing, or AI generation.</div>
-        <div class="list-grid">
-          <div class="list-item" data-item="The Omnibus Archive"><div class="item-title"><span class="emoji">⚡</span> The Omnibus Archive</div><div class="item-meta">Crossover Fighter</div><div class="item-desc">Every video game character ever created — licensed into one perfectly balanced engine. Mario vs. Doomguy vs. a Tetris block.</div><div class="item-tag">✦ Fighting · Crossover</div></div>
-          <div class="list-item" data-item="Life: Simulated"><div class="item-title"><span class="emoji">🌍</span> Life: Simulated</div><div class="item-meta">Hyper-Realistic Life Sim</div><div class="item-desc">Renders your exact hometown using satellite data — live an alternate, pixel-perfect digital life in your own neighborhood.</div><div class="item-tag">✦ Simulation · Life</div></div>
-          <div class="list-item" data-item="The Infinite MMO"><div class="item-title"><span class="emoji">♾️</span> The Infinite MMO</div><div class="item-meta">Dynamic AI-DM Fantasy</div><div class="item-desc">Zero hard-coded quests — a localized server AI acts as a real-time Dungeon Master, writing lore and creating items dynamically.</div><div class="item-tag">✦ MMO · AI · Dynamic</div></div>
-          <div class="list-item" data-item="Retro-Console Timewarp"><div class="item-title"><span class="emoji">🕰️</span> Retro-Console Timewarp</div><div class="item-meta">Alternate History</div><div class="item-desc">A world where Sega never dropped out of the hardware race — reviewing launch titles for the fictional Sega Dreamcast 5 (2025).</div><div class="item-tag">✦ Alternate History · Retro</div></div>
-        </div>
-      </div>
-
-      <div class="tab-panel" id="tab-consoles">
-        <div class="panel-title"><span class="highlight">Hardware</span> Lab — Consoles &amp; Ecosystems</div>
-        <div class="panel-desc">Speculative platforms from the near-future to deep-horizon architectures.</div>
-        <div class="list-grid">
-          <div class="list-item" data-item="PlayStation 6"><div class="item-title"><span class="emoji">🔵</span> PlayStation 6</div><div class="item-meta">Sony · 2028–2030</div><div class="item-desc">Dedicated neural processing units (NPUs) with dynamic ray-tracing that adjusts lighting based on room ambient light.</div><div class="item-tag">✦ Console · Ray-Tracing</div></div>
-          <div class="list-item" data-item="Xbox Horizon"><div class="item-title"><span class="emoji">🟢</span> Xbox Horizon</div><div class="item-meta">Microsoft · 2028–2030</div><div class="item-desc">Pure cloud-streaming HDMI dongle with localized computing chips in the controller to erase input latency.</div><div class="item-tag">✦ Cloud · Streaming</div></div>
-          <div class="list-item" data-item="Nintendo Matrix"><div class="item-title"><span class="emoji">🔴</span> Nintendo Matrix</div><div class="item-meta">Nintendo · 2028–2030</div><div class="item-desc">Modular dual-screen setup that detaches to project localized, glasses-free 3D holographic tabletop arenas.</div><div class="item-tag">✦ Hybrid · Holographic</div></div>
-          <div class="list-item" data-item="Sega Phoenix"><div class="item-title"><span class="emoji">🟡</span> Sega Phoenix</div><div class="item-meta">Sega · 2032–2035</div><div class="item-desc">Premium, open-source Linux machine running advanced arcade architecture — bringing back local split-screen arcade culture.</div><div class="item-tag">✦ Open-Source · Arcade</div></div>
-          <div class="list-item" data-item="Steam Deck Prime"><div class="item-title"><span class="emoji">🟣</span> Steam Deck Prime</div><div class="item-meta">Valve · 2032–2035</div><div class="item-desc">Micro-fluidic cooling loops enable desktop-grade path tracing on a 7-inch display without thermal throttling.</div><div class="item-tag">✦ Handheld · Cooling</div></div>
-          <div class="list-item" data-item="Apple Arcade Pro"><div class="item-title"><span class="emoji">⬜</span> Apple Arcade Pro</div><div class="item-meta">Apple · 2032–2035</div><div class="item-desc">Sleek standalone home console cube that pairs with Vision headsets to overlay virtual gaming environments.</div><div class="item-tag">✦ Console · AR</div></div>
-          <div class="list-item" data-item="The Bio-Core"><div class="item-title"><span class="emoji">🧬</span> The Bio-Core</div><div class="item-meta">Deep Future · 2040+</div><div class="item-desc">Organic biological processing unit that grows and evolves its pathways based on the types of games you play most.</div><div class="item-tag">✦ Biological · Adaptive</div></div>
-          <div class="list-item" data-item="Quantum Onyx"><div class="item-title"><span class="emoji">⚛️</span> Quantum Onyx</div><div class="item-meta">Deep Future · 2040+</div><div class="item-desc">Localized quantum computing eliminates loading screens by rendering every asset in the game universe simultaneously.</div><div class="item-tag">✦ Quantum · Zero-Load</div></div>
-        </div>
-      </div>
-
-      <div class="tab-panel" id="tab-apps">
-        <div class="panel-title"><span class="highlight">Apps</span> &amp; Services</div>
-        <div class="panel-desc">Mobile applications, developer tools, and operating software platforms inside the far-future gaming ecosystem.</div>
-        <div class="list-grid">
-          <div class="list-item" data-item="LoreForge"><div class="item-title"><span class="emoji">📜</span> LoreForge</div><div class="item-meta">Companion App</div><div class="item-desc">Syncs with any open-world RPG — an automated real-time journal using voice recognition to write your journey from an in-universe perspective.</div><div class="item-tag">✦ Journal · Voice</div></div>
-          <div class="list-item" data-item="NPC Connect"><div class="item-title"><span class="emoji">💬</span> NPC Connect</div><div class="item-meta">Companion App</div><div class="item-desc">Text or call the digital companions from your favorite RPGs while away from your console, using isolated local chat models.</div><div class="item-tag">✦ Chat · Companion</div></div>
-          <div class="list-item" data-item="GamerGait"><div class="item-title"><span class="emoji">🏃</span> GamerGait</div><div class="item-meta">Fitness App</div><div class="item-desc">Tracks real-world movements, calories, and sleep — translates your metrics into temporary stat boosts for your MMORPG characters.</div><div class="item-tag">✦ Fitness · Rewards</div></div>
-          <div class="list-item" data-item="SaveState Archive"><div class="item-title"><span class="emoji">💾</span> SaveState Archive</div><div class="item-meta">Emulator / Cloud</div><div class="item-desc">Universal cloud emulator capable of running any game file format from 1970 to 2030 flawlessly on any modern screen.</div><div class="item-tag">✦ Emulation · Archive</div></div>
-          <div class="list-item" data-item="DreamRender"><div class="item-title"><span class="emoji">🌙</span> DreamRender</div><div class="item-meta">Generative App</div><div class="item-desc">Dictate a dream upon waking — a local neural network generates a brief, playable 8-bit text-adventure game based on the narrative.</div><div class="item-tag">✦ AI · Generative</div></div>
-        </div>
-      </div>
-
-      <div class="tab-panel" id="tab-accessories">
-        <div class="panel-title"><span class="highlight">Accessories</span> &amp; Input Devices</div>
-        <div class="panel-desc">Concepts that completely redesign how players interact with digital worlds — moving past standard plastic gamepads.</div>
-        <div class="list-grid">
-          <div class="list-item" data-item="Haptic Skin"><div class="item-title"><span class="emoji">👕</span> Haptic Skin</div><div class="item-meta">Wearable</div><div class="item-desc">Lightweight fabric undershirt lined with thousands of micro-vibration points — feel wind, rain, and physical damage in-game.</div><div class="item-tag">✦ Haptic · Wearable</div></div>
-          <div class="list-item" data-item="Optic-Track Lenses"><div class="item-title"><span class="emoji">👁️</span> Optic-Track Lenses</div><div class="item-meta">AR Contact Lenses</div><div class="item-desc">Project health bars, maps, and ammunition counts directly onto the edge of your natural field of vision — no UI on monitors.</div><div class="item-tag">✦ AR · UI</div></div>
-          <div class="list-item" data-item="Kinetic Floor Mat"><div class="item-title"><span class="emoji">🦶</span> Kinetic Floor Mat</div><div class="item-meta">Omnidirectional Surface</div><div class="item-desc">Run, crouch, and jump in place to control your character — blending traditional action gaming with full physical endurance.</div><div class="item-tag">✦ Motion · Immersion</div></div>
-          <div class="list-item" data-item="Neural-Link Audio Buds"><div class="item-title"><span class="emoji">🎧</span> Neural-Link Audio Buds</div><div class="item-meta">Brain-Interface Audio</div><div class="item-desc">Bypass the eardrum entirely — send sound signals directly to the brain's auditory cortex for terrifyingly realistic 3D soundscapes.</div><div class="item-tag">✦ Neural · Audio</div></div>
-        </div>
-      </div>
+        <div class="story-text" id="text3"></div>
+        <button class="btn-continue" id="continue3">Continue →</button>
     </div>
-  </section>
 
-  <!-- ===== FEATURED STORIES ===== -->
-  <section class="section-featured" id="stories">
-    <div class="container">
-      <div class="section-tag">Cover Stories</div>
-      <h2 class="section-title">Issue #01 — <span class="highlight">Featured</span></h2>
-      <p class="section-desc">Three fictional cover stories that define the Trade Former vision.</p>
-      <div class="stories-grid" id="storiesGrid">
-        <div class="story-card" data-story="1"><div class="story-number">✦ 001</div><h4>EchoShift</h4><span class="story-category">The Blueprint</span><p>A stealth-action game where the entire world is blind — you navigate using sound mapping, echo location, and acoustic traps.</p><span class="read-more">Read More →</span></div>
-        <div class="story-card" data-story="2"><div class="story-number">✦ 002</div><h4>Project: Solara</h4><span class="story-category">Alpha Build</span><p>The complete lore bible for a dying-star civilization — including character sketches, planetary maps, and a constructed language.</p><span class="read-more">Read More →</span></div>
-        <div class="story-card" data-story="3"><div class="story-number">✦ 003</div><h4>The Dreamcast 2</h4><span class="story-category">Alternate History</span><p>What if Sega's 2006 console launch succeeded? We explore the timeline where the Dreamcast 2 became a cultural phenomenon.</p><span class="read-more">Read More →</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== EDITOR'S LETTER ===== -->
-  <section class="section-editor" id="editor">
-    <div class="container editor-layout">
-      <div class="editor-avatar">
-        <div class="avatar-box">
-          <div class="avatar-icon">✍️</div>
-          <div class="avatar-name">Aria K. Vance</div>
-          <div class="avatar-title">Editor-in-Chief</div>
-          <div style="margin-top:12px;font-size:0.6rem;color:var(--text-muted);opacity:0.3;font-family:var(--font-mono);">est. 2026</div>
+    <div id="slide-4" class="slide content-slide">
+        <div class="part-label">Part 4</div>
+        <div class="part-title">The Warm One's Resentment</div>
+        <div class="narrator-bar" id="narrator4">
+            <span class="dot" id="dot4"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave4">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
         </div>
-      </div>
-      <div class="editor-text">
-        <div class="section-tag" style="justify-content:flex-start;">Letter from the Editor</div>
-        <h2 class="section-title" style="font-size:clamp(1.4rem,3vw,2.2rem);">On <span class="highlight">unmade</span> worlds</h2>
-        <div class="letter-excerpt"><strong>Dear reader,</strong><br />Every game you've ever loved began as a wild, improbable idea in someone's head. But for every masterpiece that ships, a hundred brilliant concepts are left on the cutting-room floor. <em>Trade Former</em> is their home.</div>
-        <div class="letter-excerpt" style="font-size:0.9rem;opacity:0.7;">We treat these fictional games with the same seriousness as the industry's biggest releases — because imagination <strong>is</strong> the trade. Welcome to the former future of play.</div>
-        <div class="letter-signoff">— Aria K. Vance</div>
-        <button class="btn-primary btn-read-letter" id="readFullLetter" style="margin-top:16px;padding:10px 28px;font-size:0.6rem;">📖 Read Full Letter</button>
-      </div>
+        <div class="story-text" id="text4"></div>
+        <button class="btn-continue" id="continue4">Continue →</button>
     </div>
-  </section>
 
-  <!-- ===== BLUEPRINT ===== -->
-  <section class="section-blueprint" id="blueprint">
-    <div class="container">
-      <div class="section-tag">Interactive Demo</div>
-      <h2 class="section-title"><span class="highlight">Blueprint</span> Interface</h2>
-      <p class="section-desc">A mock UI concept — hover or tap any cell to see the speculative mechanic in action.</p>
-      <div class="blueprint-showcase">
-        <div class="blueprint-visual">
-          <div style="font-family:var(--font-mono);font-size:0.5rem;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">⚡ EchoShift — Sound Map</div>
-          <div class="bp-grid" id="bpGrid">
-            <div class="bp-cell" data-cell="1">⬤</div><div class="bp-cell" data-cell="2">⬤</div><div class="bp-cell" data-cell="3">⬤</div><div class="bp-cell" data-cell="4">⬤</div>
-            <div class="bp-cell" data-cell="5">⬤</div><div class="bp-cell" data-cell="6">⬤</div><div class="bp-cell" data-cell="7">⬤</div><div class="bp-cell" data-cell="8">⬤</div>
-            <div class="bp-cell" data-cell="9">⬤</div><div class="bp-cell" data-cell="10">⬤</div><div class="bp-cell" data-cell="11">⬤</div><div class="bp-cell" data-cell="12">⬤</div>
-            <div class="bp-cell" data-cell="13">⬤</div><div class="bp-cell" data-cell="14">⬤</div><div class="bp-cell" data-cell="15">⬤</div><div class="bp-cell" data-cell="16">⬤</div>
-          </div>
-          <div style="font-family:var(--font-mono);font-size:0.45rem;color:var(--text-muted);opacity:0.3;text-align:center;margin-top:8px;">▸ acoustic grid · 4×4</div>
+    <div id="slide-5" class="slide content-slide">
+        <div class="part-label">Part 5</div>
+        <div class="part-title">The Leap</div>
+        <div class="narrator-bar" id="narrator5">
+            <span class="dot" id="dot5"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave5">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
         </div>
-        <div class="blueprint-info">
-          <h4>Acoustic Trap System</h4>
-          <p>Each cell represents a sound-emitting node. Tap or hover to "ping" it — the echo reveals enemy positions, hidden paths, and environmental hazards. In <strong>EchoShift</strong>, the entire game is played through sound.</p>
-          <div class="bp-meta">
-            <span>🎮 Input: <span style="color:var(--text-secondary);">DualSense / Keyboard</span></span>
-            <span>📐 Grid: <span style="color:var(--text-secondary);">4×4 dynamic</span></span>
-          </div>
-          <div style="margin-top:16px;font-size:0.7rem;color:var(--text-muted);font-weight:300;border-top:1px solid rgba(255, 23, 68, 0.04);padding-top:12px;">
-            <span id="bpStatus">▶️ Hover or tap any cell to ping.</span>
-          </div>
+        <div class="story-text" id="text5"></div>
+        <button class="btn-continue" id="continue5">Continue →</button>
+    </div>
+
+    <div id="slide-6" class="slide content-slide">
+        <div class="part-label">Part 6</div>
+        <div class="part-title">Alone in the Desert</div>
+        <div class="narrator-bar" id="narrator6">
+            <span class="dot" id="dot6"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave6">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
         </div>
-      </div>
+        <div class="story-text" id="text6"></div>
+        <button class="btn-continue" id="continue6">Continue →</button>
     </div>
-  </section>
 
-  <!-- ===== FOOTER ===== -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">👾 <span class="highlight">Trade</span>Former · Gaming Magazine</div>
-      <div class="footer-links">
-        <a href="#">About</a><a href="#">Issues</a><a href="#">Submissions</a><a href="#">Contact</a>
-      </div>
-      <div class="footer-copy">© 2026 · speculative trade since forever</div>
+    <div id="slide-7" class="slide content-slide">
+        <div class="part-label">Part 7</div>
+        <div class="part-title">The Holy Temple Prison</div>
+        <div class="narrator-bar" id="narrator7">
+            <span class="dot" id="dot7"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave7">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text7"></div>
+        <button class="btn-continue" id="continue7">Continue →</button>
     </div>
-  </footer>
 
-  <!-- ===== MODAL ===== -->
-  <div class="modal-overlay" id="editorModal">
-    <div class="modal-box">
-      <button class="modal-close" id="modalClose">✕</button>
-      <h2>📖 <span class="highlight">Letter</span> from the Editor</h2>
-      <div class="modal-sub">Aria K. Vance · Trade Former Issue #01</div>
-      <div class="modal-body">
-        <p><strong>Dear reader,</strong></p>
-        <p>Every game you've ever loved began as a wild, improbable idea in someone's head. But for every masterpiece that ships, a hundred brilliant concepts are left on the cutting-room floor. <strong>Trade Former</strong> is their home.</p>
-        <p>We treat these fictional games with the same seriousness as the industry's biggest releases — because imagination <strong>is</strong> the trade. In this magazine, you'll find detailed blueprints for mechanics that don't exist, lore bibles for worlds that were never rendered, and pitch documents for games that never saw a greenlight.</p>
-        <p>We believe that the <em>former</em> future of play is just as important as the one we actually got. Because in every unmade game, there's a lesson, a spark, or a beautiful failure that can inspire what comes next.</p>
-        <p>Welcome to the trade.</p>
-        <div class="signoff">— Aria K. Vance · Editor-in-Chief</div>
-      </div>
+    <div id="slide-8" class="slide content-slide">
+        <div class="part-label">Part 8</div>
+        <div class="part-title">The Inner Circle</div>
+        <div class="narrator-bar" id="narrator8">
+            <span class="dot" id="dot8"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave8">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text8"></div>
+        <button class="btn-continue" id="continue8">Continue →</button>
     </div>
-  </div>
 
-  <!-- ===== TOAST ===== -->
-  <div class="toast" id="toast"></div>
+    <div id="slide-9" class="slide content-slide">
+        <div class="part-label">Part 9</div>
+        <div class="part-title">The Engineer and the Purple-Haired Girl</div>
+        <div class="narrator-bar" id="narrator9">
+            <span class="dot" id="dot9"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave9">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text9"></div>
+        <button class="btn-continue" id="continue9">Continue →</button>
+    </div>
 
-  <!-- ===== JAVASCRIPT ===== -->
-  <script>
-    (function() {
-      'use strict';
+    <div id="slide-10" class="slide content-slide">
+        <div class="part-label">Part 10</div>
+        <div class="part-title">The Riot</div>
+        <div class="narrator-bar" id="narrator10">
+            <span class="dot" id="dot10"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave10">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text10"></div>
+        <button class="btn-continue" id="continue10">Continue →</button>
+    </div>
 
-      // ---- DOM refs ----
-      const header = document.getElementById('siteHeader');
-      const hamburger = document.getElementById('hamburger');
-      const mainNav = document.getElementById('mainNav');
-      const navLinks = mainNav.querySelectorAll('a[data-section]');
-      const exploreBtn = document.getElementById('exploreBtn');
-      const letterBtn = document.getElementById('letterBtn');
-      const readFullLetter = document.getElementById('readFullLetter');
-      const modal = document.getElementById('editorModal');
-      const modalClose = document.getElementById('modalClose');
-      const toast = document.getElementById('toast');
-      const bpCells = document.querySelectorAll('.bp-cell');
-      const bpStatus = document.getElementById('bpStatus');
-      const magCover = document.getElementById('magCover');
-      const navCta = document.getElementById('navCta');
-      const ageGate = document.getElementById('ageGate');
-      const videoContainer = document.getElementById('video-container');
+    <div id="slide-11" class="slide content-slide">
+        <div class="part-label">Part 11</div>
+        <div class="part-title">Teleportation</div>
+        <div class="narrator-bar" id="narrator11">
+            <span class="dot" id="dot11"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave11">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text11"></div>
+        <button class="btn-continue" id="continue11">Continue →</button>
+    </div>
 
-      // ---- YouTube Player ----
-      let player = null;
-      let playerReady = false;
-      let ageVerified = false;
+    <div id="slide-12" class="slide content-slide">
+        <div class="part-label">Part 12</div>
+        <div class="part-title">New Lives</div>
+        <div class="narrator-bar" id="narrator12">
+            <span class="dot" id="dot12"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave12">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text12"></div>
+        <button class="btn-continue" id="continue12">Continue →</button>
+    </div>
 
-      // ---- Toast system ----
-      let toastTimer = null;
-      function showToast(message, emoji = '✦') {
-        toast.innerHTML = `<span class="emoji">${emoji}</span> ${message}`;
-        toast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 3000);
-      }
+    <div id="slide-13" class="slide content-slide">
+        <div class="part-label">Part 13</div>
+        <div class="part-title">The Duel of the Star and the Flame</div>
+        <div class="narrator-bar" id="narrator13">
+            <span class="dot" id="dot13"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave13">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text13"></div>
+        <button class="btn-continue" id="continue13">Continue →</button>
+    </div>
 
-      // ---- YouTube API callback ----
-      window.onYouTubeIframeAPIReady = function() {
-        console.log('🎵 YouTube API ready');
-        try {
-          player = new YT.Player('player-container', {
-            height: '100%',
-            width: '100%',
-            videoId: 'ksgELqDkCcU', // Correct video ID
-            playerVars: {
-              autoplay: 0,
-              controls: 1,
-              rel: 0,
-              modestbranding: 1,
-              playsinline: 1,
-              mute: 0 // Allow sound when triggered by user gesture
-            },
-            events: {
-              onReady: function(event) {
-                playerReady = true;
-                event.target.setVolume(50);
-                console.log('🎵 Player ready — volume set to 50%');
-                // If age already verified before player ready, start playback
-                if (ageVerified) {
-                  videoContainer.classList.add('visible');
-                  event.target.unMute();
-                  event.target.playVideo();
+    <div id="slide-14" class="slide content-slide">
+        <div class="part-label">Part 14</div>
+        <div class="part-title">The Secret Sanctuary</div>
+        <div class="narrator-bar" id="narrator14">
+            <span class="dot" id="dot14"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave14">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text14"></div>
+        <button class="btn-continue" id="continue14">Continue →</button>
+    </div>
+
+    <div id="slide-15" class="slide content-slide">
+        <div class="part-label">Part 15</div>
+        <div class="part-title">The Ruined Home</div>
+        <div class="narrator-bar" id="narrator15">
+            <span class="dot" id="dot15"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave15">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text15"></div>
+        <button class="btn-continue" id="continue15">Continue →</button>
+    </div>
+
+    <div id="slide-16" class="slide content-slide">
+        <div class="part-label">Part 16</div>
+        <div class="part-title">The Ghost Island</div>
+        <div class="narrator-bar" id="narrator16">
+            <span class="dot" id="dot16"></span>
+            <span class="label">Reading</span>
+            <div class="wave" id="wave16">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="story-text" id="text16"></div>
+        <button class="btn-continue" id="continue16">Continue →</button>
+    </div>
+
+    <!-- ====== FINAL OVERLAY ====== -->
+    <div id="final-overlay">
+        <div class="final-label">✦ The End of Chapter 2 ✦</div>
+        <div class="final-sub">The Watcher's Pursuit is complete.<br />The Dragon King has found his path. The grey one still waits.<br />The Age of Black Fire continues.</div>
+        <a href="https://discord.gg/sEwYKy9RMu" target="_blank" class="final-invite">Join the Discussion</a>
+    </div>
+
+    <!-- ====== SKIP BUTTON ====== -->
+    <button id="skipBtn" aria-label="Skip to next slide" title="Skip to next slide"></button>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ======================================================================
+            // 0. YOUTUBE PLAYER — DUAL‑LAYER AUTOPLAY
+            // ======================================================================
+            let player = null;
+            let playerReady = false;
+            let currentVolume = 20;
+            let targetVolume = 20;
+            let fadeInterval = null;
+            let isFading = false;
+            let fallbackIframe = null;
+            let apiFallbackTimer = null;
+
+            const container = document.getElementById('youtube-container');
+
+            function setPlayerVolume(vol) {
+                if (!player || !playerReady) return;
+                try {
+                    player.setVolume(Math.round(vol));
+                    currentVolume = vol;
+                    updateVolumeIndicator(vol);
+                } catch (e) {
+                    console.warn('Volume set error:', e);
                 }
-              },
-              onError: function(event) { console.warn('⚠️ YouTube player error:', event.data); },
-              onStateChange: function(event) {
-                if (event.data === YT.PlayerState.PLAYING) console.log('▶️ Video playing');
-                else if (event.data === YT.PlayerState.ENDED) console.log('⏹️ Video ended');
-              }
             }
-          });
-        } catch (e) { console.error('❌ Failed to create YouTube player:', e); }
-      };
 
-      // ---- Age Gate Logic ----
-      let ageGateShown = false;
+            function updateVolumeIndicator(vol) {
+                const fill = document.getElementById('volFill');
+                if (fill) {
+                    fill.style.width = Math.min(vol, 100) + '%';
+                }
+            }
 
-      function showAgeGate() {
-        if (ageGateShown) return;
-        ageGateShown = true;
-        ageGate.classList.add('visible');
-        console.log('🔞 Age gate displayed');
-      }
+            function fadeVolume(target, duration) {
+                if (fadeInterval) {
+                    clearInterval(fadeInterval);
+                    fadeInterval = null;
+                    isFading = false;
+                }
+                if (!player || !playerReady) return;
 
-      function confirmAge() {
-        if (ageVerified) return;
-        ageVerified = true;
-        ageGate.classList.remove('visible');
-        console.log('✅ Age verified — starting video');
+                const startVol = currentVolume;
+                const startTime = performance.now();
+                isFading = true;
 
-        // Reveal the video container
-        videoContainer.classList.add('visible');
+                fadeInterval = setInterval(() => {
+                    const elapsed = performance.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = progress < 0.5 ?
+                        2 * progress * progress :
+                        1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    const current = startVol + (target - startVol) * eased;
+                    setPlayerVolume(current);
+                    if (progress >= 1) {
+                        clearInterval(fadeInterval);
+                        fadeInterval = null;
+                        isFading = false;
+                        currentVolume = target;
+                        targetVolume = target;
+                        updateVolumeIndicator(target);
+                    }
+                }, 16);
+            }
 
-        // Play video if player is ready
-        if (playerReady) {
-          player.unMute(); // Explicitly ensure it's unmuted
-          player.setVolume(50);
-          player.playVideo();
-        } else {
-          console.log('⏳ Player not ready yet, will start when ready');
-        }
+            function duckVolume() {
+                if (fadeInterval) {
+                    clearInterval(fadeInterval);
+                    fadeInterval = null;
+                    isFading = false;
+                }
+                targetVolume = 6;
+                if (player && playerReady) {
+                    fadeVolume(6, 1000);
+                }
+            }
 
-        showToast('🎵 Enjoy the music!', '🎧');
+            function fadeOutMusic(duration) {
+                if (currentVolume === 0 || !player || !playerReady) return;
+                fadeVolume(0, duration || 2500);
+            }
 
-        // Remove age gate from DOM completely after fade out
-        setTimeout(function() { ageGate.style.display = 'none'; }, 800);
-      }
+            function fadeInMusic() {
+                if (currentVolume === 20 || !player || !playerReady) return;
+                fadeVolume(20, 2000);
+            }
 
-      // ---- Age gate click handlers ----
-      ageGate.addEventListener('click', function(e) { confirmAge(); });
-      document.querySelector('.age-box')?.addEventListener('click', function(e) {
-        e.stopPropagation();
-        confirmAge();
-      });
+            window.__music = {
+                duck: duckVolume,
+                fadeOut: fadeOutMusic,
+                fadeIn: fadeInMusic,
+                setVol: function(vol) {
+                    if (fadeInterval) {
+                        clearInterval(fadeInterval);
+                        fadeInterval = null;
+                        isFading = false;
+                    }
+                    targetVolume = vol;
+                    if (player && playerReady) setPlayerVolume(vol);
+                },
+                isFading: () => isFading
+            };
 
-      // Show age gate shortly after page load
-      setTimeout(function() {
-        if (!ageVerified) showAgeGate();
-      }, 500);
+            function createFallbackIframe() {
+                if (fallbackIframe) return;
+                fallbackIframe = document.createElement('iframe');
+                fallbackIframe.src =
+                    'https://www.youtube.com/embed/UIam8zl4af8?autoplay=1&mute=1&loop=1&playlist=UIam8zl4af8&controls=0&disablekb=1&modestbranding=1&iv_load_policy=3&playsinline=1';
+                fallbackIframe.allow = 'autoplay; encrypted-media';
+                fallbackIframe.style.width = '100%';
+                fallbackIframe.style.height = '100%';
+                fallbackIframe.style.border = 'none';
+                container.innerHTML = '';
+                container.appendChild(fallbackIframe);
+                console.log('🎵 Fallback iframe injected (muted autoplay).');
+                playerReady = true;
+                document.getElementById('music-indicator').classList.add('active');
+                updateVolumeIndicator(20);
+            }
 
-      // ---- TABS ----
-      const tabBtns = document.querySelectorAll('.tab-btn');
-      const tabPanels = document.querySelectorAll('.tab-panel');
+            function loadYouTubeAPI() {
+                if (document.getElementById('youtube-api')) return;
+                const tag = document.createElement('script');
+                tag.id = 'youtube-api';
+                tag.src = 'https://www.youtube.com/iframe_api';
+                tag.async = true;
+                tag.defer = true;
+                document.head.appendChild(tag);
+            }
 
-      function activateTab(tabId) {
-        tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
-        tabPanels.forEach(panel => panel.classList.toggle('active', panel.id === tabId));
-      }
+            window.onYouTubeIframeAPIReady = function() {
+                if (fallbackIframe) return;
+                clearTimeout(apiFallbackTimer);
+                player = new YT.Player('youtube-player', {
+                    height: '34',
+                    width: '60',
+                    videoId: 'UIam8zl4af8',
+                    playerVars: {
+                        autoplay: 1,
+                        loop: 1,
+                        playlist: 'UIam8zl4af8',
+                        controls: 0,
+                        showinfo: 0,
+                        rel: 0,
+                        modestbranding: 1,
+                        iv_load_policy: 3,
+                        disablekb: 1,
+                        mute: 1
+                    },
+                    events: {
+                        onReady: function(event) {
+                            playerReady = true;
+                            event.target.setVolume(20);
+                            currentVolume = 20;
+                            targetVolume = 20;
+                            updateVolumeIndicator(20);
+                            document.getElementById('music-indicator').classList.add('active');
+                            event.target.playVideo();
+                            console.log('🎵 YouTube API player ready (muted).');
+                        },
+                        onStateChange: function(event) {
+                            if (event.data === YT.PlayerState.ENDED) {
+                                player.playVideo();
+                            }
+                        },
+                        onError: function(event) {
+                            console.warn('YouTube API error:', event.data);
+                            if (!fallbackIframe) {
+                                createFallbackIframe();
+                            }
+                        }
+                    }
+                });
+            };
 
-      tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-          const tabId = this.dataset.tab;
-          activateTab(tabId);
-          const tabsSection = document.getElementById('tabs');
-          if (tabsSection && window.innerWidth < 768) tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          showToast(`📂 Switched to ${this.textContent.trim().replace(/\d+$/, '').trim()}`, '📑');
-        });
-      });
+            function startAPITimer() {
+                apiFallbackTimer = setTimeout(() => {
+                    if (!playerReady && !fallbackIframe) {
+                        console.warn('YouTube API timed out, using fallback iframe.');
+                        createFallbackIframe();
+                    }
+                }, 3000);
+            }
 
-      // ---- List items click ----
-      document.querySelectorAll('.list-item').forEach(item => {
-        item.addEventListener('click', function() {
-          const title = this.querySelector('.item-title')?.textContent?.trim() || 'Item';
-          const meta = this.querySelector('.item-meta')?.textContent?.trim() || '';
-          showToast(`📄 ${title} — ${meta}`, '✦');
-          this.style.borderColor = 'rgba(255, 23, 68, 0.25)';
-          setTimeout(() => { this.style.borderColor = ''; }, 700);
-        });
-      });
+            loadYouTubeAPI();
+            startAPITimer();
 
-      // ---- Mobile nav ----
-      hamburger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        this.classList.toggle('open');
-        mainNav.classList.toggle('open');
-      });
+            function ensureAudioPlayback() {
+                if (fallbackIframe) {
+                    console.log('🎵 Fallback iframe is playing muted (cannot unmute).');
+                    return;
+                }
+                if (!player || !playerReady) return;
+                try {
+                    player.unMute();
+                    player.setVolume(20);
+                    currentVolume = 20;
+                    targetVolume = 20;
+                    updateVolumeIndicator(20);
+                    player.playVideo();
+                    console.log('🎵 Audio unmuted and playing.');
+                } catch (e) {
+                    console.warn('Unmute error:', e);
+                }
+            }
 
-      navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-          hamburger.classList.remove('open');
-          mainNav.classList.remove('open');
-          navLinks.forEach(l => l.classList.remove('active'));
-          this.classList.add('active');
-        });
-      });
+            // ======================================================================
+            // 1. STORY DATA — 16 PARTS (exact text)
+            // ======================================================================
+            const partsData = [
+                // Part 1
+                `On a ridge above the burning valley, Agent #083 watched the world end. He had seen the First Dragon Rider sprint down the mountain, two infants clutched to his chest. He had seen the demonic avalanche, the icy hands reaching for the fleeing man. He had seen the burning city, the raining spears of light, the psychic explosions tearing through the refugee colony. He had seen the Rider place the children on the ancient turtle's shell. He had seen the Mask placed beside them. He had seen the Rider turn back toward the city, his body glowing with blue fire. And now he watched the blue fire fade. The Rider was gone. The children were gone. The turtle had vanished into the mist.
 
-      // ---- Nav scroll highlight ----
-      const sections = ['home', 'categories', 'tabs', 'stories', 'editor', 'blueprint'];
-      function updateActiveNav() {
-        const scrollY = window.scrollY + 120;
-        let current = 'home';
-        sections.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            const top = el.offsetTop;
-            const height = el.offsetHeight;
-            if (scrollY >= top && scrollY < top + height) current = id;
-          }
-        });
-        navLinks.forEach(link => link.classList.toggle('active', link.dataset.section === current));
-      }
-      window.addEventListener('scroll', updateActiveNav, { passive: true });
-      updateActiveNav();
+        #083 stood on the ridge, his black suit dusty with snow, his hat pressed tight against his head. His blonde hair was tangled and wet. His black eyes were wide with shock. He had been sent to monitor the Ice Queen's cave. The Organization had suspected her power was destabilizing. They had not expected this: a global collapse, a legendary betrayal, the disappearance of the First Dragon Rider. He had to choose. Follow the Rider into the deep. Or follow the children. He chose the children. He ran down the ridge, his boots slipping on the snow, his breath coming in gasps. He reached the shore just as the mist swallowed the last trace of the turtle. He stood at the water's edge, staring into the grey nothingness. They were gone. He had hesitated too long. He was the Architect of Hesitation. And his hesitation had cost him everything.`,
 
-      // ---- Header scroll shadow ----
-      window.addEventListener('scroll', function() { header.classList.toggle('scrolled', window.scrollY > 20); }, { passive: true });
+                // Part 2
+                `#083 did not give up. He spent weeks searching the coastline. He traveled from village to village, his black suit dusty and worn, his eyes tired and bloodshot. He questioned fishermen and farmers, merchants and sailors. He pieced together the fragments of a story that no one fully understood. A turtle. Two children. A curse. The villagers spoke of a grey child whose eyes were like galaxies. A child whose cry could kill. A child who brought death wherever he went. And another child. A warm child. A child who glowed with fire and life. #083 knew who they were. He knew they were the infants from the mountain. He knew they were the sons of the First Dragon Rider. He knew he had to find them.
 
-      // ---- Modal ----
-      function openModal() { modal.classList.add('open'); document.body.style.overflow = 'hidden'; }
-      function closeModal() { modal.classList.remove('open'); document.body.style.overflow = ''; }
-      letterBtn.addEventListener('click', openModal);
-      readFullLetter.addEventListener('click', openModal);
-      modalClose.addEventListener('click', closeModal);
-      modal.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
-      document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+        The turtle had stopped near a village. It did not go onto the shore. It waited in the shallows, its massive shell rising from the water like a small island. The villagers saw the turtle approaching and gathered on the beach, their eyes wide with wonder and fear. When the turtle stopped, they saw the children. Two boys. One healthy and warm. The other grey and still. The villagers waded into the water and pulled the children from the turtle's back. They carried them to the shore, wrapping them in blankets and offering them food. The warm one cried out, reaching for the grey one, but the villagers held him back. The grey one did not move. He did not cry. He did not open his eyes. And then he did.`,
 
-      // ---- Explore button ----
-      exploreBtn.addEventListener('click', function() {
-        const target = document.getElementById('categories');
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        showToast('Exploring Issue #01 — The Blueprint', '📐');
-      });
+                // Part 3
+                `His eyes were not eyes. They were galaxies, swirling with stars and nebulae, infinite and terrifying. The villagers stumbled back, dropping the grey child onto the sand. They covered their faces, screaming, praying to their gods. The grey child began to cry. The sound was not a child's cry. It was piercing, sharp, demonic. A sound that cut through the air like a blade. The villagers clutched their ears and fell to their knees. Blood trickled from their noses. The plants around them withered and died. The animals in the village dropped dead. The grey child's cry was death itself.
 
-      // ---- Subscribe button ----
-      navCta.addEventListener('click', function(e) {
-        e.preventDefault();
-        window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-4CH66365SP314171VNIPAMFQ', '_blank');
-        showToast('📬 Opening subscription page...', '👾');
-      });
+        The villagers scrambled to their feet, their faces pale with terror. They grabbed both children and ran back to the water. They placed them back on the turtle's shell. They pushed the turtle back into the deeper water, their hands shaking, their hearts pounding. "Curse!" they screamed. "They are cursed! Take them away! Take them far away!" The turtle drifted back into the mist.
 
-      // ---- Category cards ----
-      document.querySelectorAll('.category-card').forEach(card => {
-        card.addEventListener('click', function() {
-          const cat = this.dataset.category || 'section';
-          const names = { blueprint: 'The Blueprint', alpha: 'Alpha Build', pitch: 'Pitch Meeting', alt: 'Alternate History' };
-          const label = names[cat] || cat;
-          showToast(`📖 Browsing ${label} — speculative trade at its best`, '✦');
-          this.style.borderColor = 'rgba(255, 23, 68, 0.25)';
-          setTimeout(() => { this.style.borderColor = ''; }, 800);
-        });
-      });
+        The cycle repeated. The turtle would stop near another village. Some villagers could not reach the turtle, the water too deep, the distance too great. But others could. They would wade or swim out to the shell, pull the children from its back, carry them to shore. And then the grey child would open his eyes. And the death would begin. Plants withered. Animals died. The villagers would collapse, clutching their ears, their noses bleeding. They would scream about curses and demons and evil spirits. They would get back in their boats, row out to the turtle, place the children back on its shell, and push it away. The turtle always waited. It stayed in the shallows, patient and still, as if it knew the children would be brought back. As if it was the only thing in the world that would never abandon them.`,
 
-      // ---- Story cards ----
-      document.querySelectorAll('.story-card').forEach(card => {
-        card.addEventListener('click', function() {
-          const title = this.querySelector('h4')?.textContent || 'Story';
-          showToast(`📰 Reading "${title}" — a deep dive into speculative design`, '📄');
-        });
-      });
+                // Part 4
+                `The warm one began to understand. He watched the villagers' faces. He saw their fear. He saw their hatred. He saw the way they looked at his brother, the way they flinched from his presence. He began to realize that the grey one was different. That the grey one was dangerous. He began to resent him.
 
-      // ---- Blueprint grid ----
-      bpCells.forEach(cell => {
-        cell.addEventListener('mouseenter', function() { activateCell(this); });
-        cell.addEventListener('touchstart', function(e) { e.preventDefault(); activateCell(this); }, { passive: false });
-        cell.addEventListener('click', function() { activateCell(this); });
+        The warm one grew. He learned to walk on the turtle's shell, his small feet finding purchase on the moss and the roots. He learned to climb the dead trees, to peer out at the empty sea. He learned to hunt the few fish that swam near the turtle's body, catching them with his bare hands. He did not need to learn to survive. He was the Son of Fire. His body burned with a heat that kept him warm, that gave him strength. The grey one did not grow. He remained small, his body thin and fragile. He never opened his eyes. He never moved. He just lay there, his chest rising and falling, his skin grey and cold. He did not eat. He did not drink. He did not cry. The warm one hated him. He hated the way the villagers looked at them. He hated the way they screamed and ran. He hated the way they put them back on the turtle, over and over again, always blaming his brother. He wanted to leave the turtle. He wanted to find a place where people would not fear them. He wanted to find a place where he could be normal. He wanted to leave his brother behind.`,
 
-        function activateCell(el) {
-          bpCells.forEach(c => c.classList.remove('active'));
-          el.classList.add('active');
-          const index = el.dataset.cell || '?';
-          const sounds = ['⚡ ping', '🔊 echo', '🎵 tone', '🌀 ripple', '💥 burst', '✨ shimmer'];
-          const sound = sounds[parseInt(index) % sounds.length] || '⬤ ping';
-          bpStatus.textContent = `▶️ Cell ${index} pinged — ${sound} detected.`;
-          el.style.transform = 'scale(0.92)';
-          setTimeout(() => { el.style.transform = ''; }, 150);
-          showToast(`🔊 Echo from cell ${index} — ${sound}`, '🌀');
-        }
-      });
+                // Part 5
+                `The turtle stopped near one more village. It was larger than the others, with stone walls and a wooden dock. The villagers who gathered on the shore were armed, their faces hard and suspicious. They had heard the rumors. They knew about the cursed children on the turtle. They did not try to rescue them. Instead, they watched from a distance, their weapons raised, their eyes narrowed. They were ready to kill the children if they had to. They were ready to kill the turtle if it came too close.
 
-      // ---- Magazine cover ----
-      magCover.addEventListener('click', function() {
-        showToast('📘 Trade Former Issue #01 — EchoShift cover story', '👾');
-        this.style.transform = 'rotateY(0deg) scale(1.02)';
-        setTimeout(() => { this.style.transform = ''; }, 400);
-      });
+        The warm one looked at the villagers. He looked at their fear. He looked at their hatred. He looked at their weapons. He made a decision. He walked to the edge of the turtle's shell. He looked down at the water, dark and deep. He looked back at his brother, still lying in the center of the shell, still grey and still and cold. He jumped.
 
-      // ---- Keyboard shortcut ----
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'e' || e.key === 'E') if (!modal.classList.contains('open')) openModal();
-      });
+        The water was cold. The warm one gasped as he hit the surface, his lungs filling with saltwater. He kicked his legs, his arms flailing, trying to reach the shore. The villagers watched him, their faces frozen in surprise. He did not care. He swam. He swam harder than he had ever swum before, his muscles burning, his lungs screaming. But the water was too deep, the shore too far. His strength gave out. The water closed over his head. He felt hands grabbing at his body. He felt them pulling him down, dragging him into the darkness. They were everywhere, cold and wet and relentless. He could not see them. He could not fight them. He could not breathe. He lost consciousness.`,
 
-      // ---- Smooth anchor scroll ----
-      navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-          const targetId = this.dataset.section;
-          if (targetId && targetId !== 'home') {
-            const target = document.getElementById(targetId);
-            if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-          } else if (targetId === 'home') { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-        });
-      });
+                // Part 6
+                `The warm one woke on the shore. He did not know how he had gotten there. He did not know who had pulled him from the water. He only knew that he was alive, and that he was alone, and that he had no idea where his brother was. He crawled up the beach, his body shaking, his lungs burning. The sand stretched out before him, endless and empty. The sun beat down on him, a white-hot eye in a sky empty of clouds. He was in the desert. He did not know how he had gotten there. He did not know where the turtle was. He did not know where his brother was. He only knew that he was alone.
 
-      // ---- iOS 100vh fix ----
-      const setVH = function() { document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`); };
-      setVH();
-      window.addEventListener('resize', setVH);
+        He walked for days, his feet bleeding, his throat parched. The sun beat down on him. The sand stretched out in every direction. There was no water. No shade. No life. He was going to die. He collapsed on the sand, his body giving out. His eyes closed. His breath came in shallow gasps. He thought of his brother, still on the turtle, still grey and cold. He thought of the red-haired man, the one who had placed them on the turtle's back. He thought of the warmth he had once felt, the warmth that was now gone. He was alone. He had always been alone. He would always be alone. And then he heard voices.
 
-      console.log('👾 Trade Former · Age Gate + Visible Video Player');
-    })();
-  </script>
+        Scavengers found him. They were desert runners, men and women with sun-cracked skin and eyes that had learned to see value in anything. They had been tracking the turtle's wake for days, hoping to find treasure. Instead, they found a boy. He was barely alive. His skin was burned, his lips cracked, his body weak. But he was still breathing. He was still alive. He was still valuable.`,
+
+                // Part 7
+                `The scavengers argued about what to do with him. Some wanted to leave him to die. Others wanted to sell him. They settled on the latter. They carried him to the nearest city and sold him to a man in a black uniform. The boy did not know where he was going. He did not know who the man was. He only knew that he was no longer alone. He was in the hands of the Holy Temple Prison.
+
+        #083 arrived at the Holy Temple Prison weeks later. He had followed the trail. He had tracked the scavengers. He had watched them sell the warm one to a man in a black uniform. And now he stood in the shadows outside the prison walls, staring at the massive structure in disbelief. He had not known this place existed. The Holy Temple Prison was not on any map. It was not mentioned in any report. The Organization had no records of it. It was a secret, hidden from the world, a place where children of forbidden bloodlines were caged and forgotten. It was a colossal structure of iron and stone, a "rehabilitation facility" run by the Kingdom of Ivan. Its walls rose a hundred feet high, lined with crystals that drained elemental energy. Guards in heavy steel-plated armor patrolled the gates, their steam whips crackling with suppressed power.
+
+        #083 stared at the walls, his mind racing. How many children were inside? How many had been taken? How many had been sold? He did not know. He only knew that the warm one was in there. And the grey one was somewhere else. Somewhere he could not find. He had to get inside. He had to help the children. But he could not. He had no identification. He had no authority. The guards did not know he existed. The Organization did not exist, as far as the world was concerned. He was alone. He would have to find another way.`,
+
+                // Part 8
+                `#083 watched the prison for weeks. He studied the guards' routines. He studied the walls. He studied the gates. He looked for weaknesses, for gaps, for any way to get inside. And he found one. The prisoners were planning an escape. He could see it in the way they moved, the way they whispered, the way they watched the guards. They were desperate. They had nothing left to lose. #083 made a decision. He would help them. He found a way to communicate with the children. He slipped notes under the gates, left messages in the shadows, spoke through the gaps in the walls. He told them about the guards' routines. He told them about the weak points in the walls. He told them when to move. He became their invisible ally.
+
+        The Holy Temple Prison was a place of forgotten children. In the cells, the young Dragon King met his inner circle for the first time. They were strangers, brought together by circumstance, but they would become the foundation of a new kingdom. In the cell next to his, a boy sat in silence. He was shorter than the Dragon King, with a lean build that spoke of a life spent surviving on the streets. His face was hidden by a curtain of stiff black hair that fell over his eyes, and his arms were wrapped in bandages so tight they looked like they were holding him together. He said nothing when the Dragon King approached the bars between their cells. He just stared through the darkness of his hair with eyes that glowed faintly red.
+
+        "Who are you?" the Dragon King asked. The boy did not answer. But his hand moved, a single gesture, a flick of his fingers, and a spark of black flame danced between them. It was not fire. It was something else. Something that burned without heat, that consumed without light. The guards saw it and screamed, rushing forward to suppress it, but the flame was already gone. The boy looked at the Dragon King and smiled, a thin, humorless smile that did not reach his eyes. "You are like me," he said. "You are not supposed to exist."`,
+
+                // Part 9
+                `In another cell, a girl watched them both. She had hair the color of sunlight and eyes that shifted from blue to gold when she spoke. She had been an exile of the Kingdom of Ivan, her family had fallen out of favor with the King, and she had been sold into the prison system like a common criminal. She wore a tunic covered in grease and metal shavings, and her hands were never still, always tinkering with something, always building. "I am an engineer," she said, her eyes glowing gold as she showed the Dragon King the device she was crafting, a small mechanism that could generate a pulse of energy strong enough to disrupt the prison's suppression field. "I am going to get us out of here."
+
+        In the shadows of the common area, a girl with hair the color of twilight watched them all. Deep purple hair that shimmered in the dim light, her eyes large and expressive. She moved with a grace that seemed unnatural, her steps silent, her presence almost invisible. She said nothing, but she was always there, always watching. The Dragon King never figured out why she was in the prison. She did not seem dangerous. She did not seem gifted. But she was. She was the sister of the Wicked One. But she did not know it. She was a figment, a creation of a broken mind. But she believed she was real.
+
+        And in the deepest cell, the coldest cell, the grey child sat alone. He had not left the turtle. He had not jumped into the sea. He had not walked through the desert. He had stayed on the turtle's back, drifting through the mist, through the empty sea, through the endless grey. But the turtle had stopped. It had stopped near a desert shore, its massive shell rising from the water like a small island. The scavengers who found the warm one had also found the grey one. They had pulled him from the turtle's back, carried him to shore, and sold him to the same prison. The grey one had not cried. He had not opened his eyes. He had not resisted. He had simply been taken.`,
+
+                // Part 10
+                `And now he sat in the coldest cell, his eyes closed, his power draining life from everything around him. The guards who visited him came back pale and shaken. They stopped visiting. The grey one sat alone in the darkness, a boy who was not quite alive, not quite dead. He did not know his brother was in the same prison. He did not know his brother was just a few cells away. He only knew that he was alone. And he waited.
+
+        The escape came six months later. The riot erupted in the common area. The prisoners surged forward, their voices raised in a single, terrible cry. The guards rushed in, their suppression crystals glowing, their steam whips crackling. But the prisoners were ready. The Black Fire boy unleashed a torrent of underworld flame. The Engineer scrambled the suppression field. The Purple-Haired girl guided them through the darkness. And the Dragon King led them to the surface.
+
+        The facility burned. Violent orange flames and black smoke engulfed the iron and stone walls. Guards in full steel-plated armor attempted to restrain the children, their steam whips cutting through the air. But the children were too fast, too desperate, too fierce. #083 was waiting for them. He stood in the shadows at the edge of the prison grounds, his black suit immaculate, his hat perfectly in place. He watched the children pour out of the burning facility, their faces wild with freedom. And then he saw the warm one. He was taller now, stronger. His black hair spiked wildly, and his eyes burned with a fire that could not be hidden. #083 recognized him instantly. He was the Son of Fire. The heir to the Dragon Rider's bloodline. The one who carried the Mask.`,
+
+                // Part 11
+                `#083 stepped forward. "Follow me," he said. "I will take you to safety." The children looked at him, their eyes wary. But they had no choice. They followed him into the darkness.
+
+        #083 transported the children one by one. He used his rare ability—teleportation—to move them to the far side of the desert, placing them in the territory of the Earth Empire. He took the Black Fire boy. He took the Engineer. He took the Purple-Haired girl. And then he took the warm one. He took him to a city on the edge of the Empire, where he could hide, where he could grow, where he could become something more. "You are special," #083 told him. "You are the son of the First Dragon Rider. You carry his blood. You carry his legacy." The warm one stared at him, his eyes wide. "I do not know what that means," he said. "You will," #083 said. "In time."
+
+        But there was one more. The grey one. #083 had not found him. He had searched, but the trail had gone cold. The turtle had drifted into the mist, and the grey one had disappeared. He did not know where he was. He did not know if he was alive or dead. He only knew that he had failed. He had saved the warm one. He had saved the others. But he had lost the grey one. He was the Architect of Hesitation. And his hesitation had cost him again.`,
+
+                // Part 12
+                `In the Earth Empire, the children found new homes. Integrated into the Empire's rigid military order, they began to build new lives. The Dragon King joined the army. He learned to fight, to lead, to survive. He rose through the ranks, his natural talent and fire-forged strength carrying him forward. He learned to suppress his abilities, to mask his connection to the "war criminal" Dragon Rider bloodline. He learned to be a general. Every mission felt like child's play. He was holding back a strength that could vaporize his foes. Over time, his eyes hung lower each day as the battles blended together. He transitioned from a warrior who grit his teeth while killing to a man who barely changed expression when an unarmed enemy begged for mercy.
+
+        The Engineer attended school to become a master mechanic. She studied the Empire's technology, learning to build and repair the machines that kept the Empire running. She would eventually create the specialized gear used to hide the King's fire powers, the boots and gloves that redirected his flames as "explosive earth" attacks. The Black Fire User joined the Guild of Mercenaries. He forged a brutal reputation as a survivor, taking contracts that no one else would touch. His black flames earned him a reputation as a monster, a demon in human form. He carried a multi-million dollar bounty on his head, and yet he walked through the Empire's cities with the confidence of a king. The Purple-Haired girl disappeared into the shadows. She became a spy, an assassin, a messenger. She was the Dragon King's eyes and ears, feeding him information from the darkest corners of the world.`,
+
+                // Part 13
+                `The General's reputation reached its peak during a legendary encounter with a Kingdom of Ivan horde. At the helm stood the future Councilman Ivan, a man floating in mid-air with star-shaped eyes and messy blonde hair with shining stars at the tips. He was the protagonist of Ivan, a warrior whose power was as blinding as the light of the Halo itself. The two leaders fought for nearly a month, long after their respective armies had destroyed each other. The General unleashed his suppressed fire, his jet-like speed carrying him through the air. Councilman Ivan rained down spears of light, his star-shaped eyes tracking the General's every move. On the 27th day, both reached their absolute power limits. Ivan could no longer fly, and the General could no longer sustain his speed. They ended up fighting like average exhausted non-gifted men, their fists colliding, their bodies bleeding. They knocked each other out on a pile of their men's dead bodies. Because they were the only ones to return alive, both were promoted. Agent #083 secretly extracted the General back to the Empire to ensure the Fire Artifact remained viable.`,
+
+                // Part 14
+                `While the world believed the General was hunting Ivan's army, he entered a secret mercenary phase. He traveled through the desert, through the mountains, through the forests. He rescued a wagon of children from slavers, and in doing so, discovered the Earth Empire's greatest secret: an enormous underground metropolis. It was a sanctuary for mermaids, fairies, and gifted refugees, anchored by a 100,000-foot tree that reached toward the surface. The city was hidden from the world, a place where the persecuted could find safety. The General attempted to liberate more prisons, but discovered a horrifying societal complicity. Scavengers, bounty hunters, and information brokers all profited from the industry of child prisons. They chose silence or death over exposing the truth. In a final act of rage during a refugee slaughter, the General's alien-tech armor synced with his flames. He donned his White Mask, which took the shape of a dragon. Scales erupted from his skin. He incinerated the hunters instantly, his soldiers finally realizing why he was called the Dragon General.`,
+
+                // Part 15
+                `Chapter 2 concludes with the General stumbling upon the long-lost ruins of the Dragon Kingdom. While patrolling his territory, he realized he was walking through his ancient hometown, previously lost in maps following the Ice Queen's last Age of White Ice. Beneath a destroyed throne room, he found massive chamber doors that were hot to the touch. He sensed a heat signature so familiar it could only belong to his father, the First Dragon Rider. His father was alive. This realization triggered his decision to resign from the Earth Empire and rebuild the kingdom for the World Summit.
+
+        But there was one more. The grey one. #083 had not found him. He had searched, but the trail had gone cold. The turtle had drifted into the mist, and the grey one had disappeared. He did not know where he was. He did not know if he was alive or dead. He only knew that he had failed. He had saved the warm one. He had saved the others. But he had lost the grey one. He was the Architect of Hesitation. And his hesitation had cost him again.`,
+
+                // Part 16
+                `The grey one drifted. The turtle carried him through the mist, through the empty sea, through the endless grey. The boy never opened his eyes. He never moved. He never ate or drank or cried. He just lay there, his chest rising and falling, his skin grey and cold. The turtle was his only companion. The turtle was the only thing he could not kill. The turtle was the only thing that was not afraid of him. The turtle was the only thing that had ever stayed with him. And so the turtle became his only friend. The grey one drifted on, a ghost on a ghost island, a boy who was not quite alive, not quite dead. He drifted through the years, through the decades, through the centuries. He never opened his eyes. He never moved. He never spoke. But somewhere, deep in the darkness of his mind, he remembered. He remembered warmth. He remembered a heartbeat. He remembered a man with red hair and a smile that could light up the darkness. He remembered his brother. And he waited.`
+            ];
+
+            // ======================================================================
+            // 2. DOM REFS
+            // ======================================================================
+            const slides = document.querySelectorAll('.slide');
+            const finalOverlay = document.getElementById('final-overlay');
+            const skipBtn = document.getElementById('skipBtn');
+            const btnBegin = document.getElementById('btnBegin');
+
+            // Store elements for each slide (1-indexed)
+            const dots = {};
+            const waves = {};
+            const texts = {};
+            const continues = {};
+            const narrators = {};
+
+            for (let i = 1; i <= 16; i++) {
+                dots[i] = document.getElementById('dot' + i);
+                waves[i] = document.getElementById('wave' + i);
+                texts[i] = document.getElementById('text' + i);
+                continues[i] = document.getElementById('continue' + i);
+                narrators[i] = document.getElementById('narrator' + i);
+            }
+
+            // ======================================================================
+            // 3. CANVAS SETUP & PARTICLES
+            // ======================================================================
+            let W, H;
+            const bgCanvas = document.getElementById('bg-canvas');
+            const bgCtx = bgCanvas.getContext('2d');
+            const pCanvas = document.getElementById('particle-canvas');
+            const pCtx = pCanvas.getContext('2d');
+            let particles = [];
+
+            function resizeCanvases() {
+                W = window.innerWidth;
+                H = window.innerHeight;
+                bgCanvas.width = W;
+                bgCanvas.height = H;
+                pCanvas.width = W;
+                pCanvas.height = H;
+            }
+            window.addEventListener('resize', resizeCanvases);
+            resizeCanvases();
+
+            class Particle {
+                constructor() { this.reset(true); }
+                reset(init) {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.speedX = (Math.random() - 0.5) * 0.3;
+                    this.speedY = (Math.random() - 0.5) * 0.3;
+                    this.opacity = Math.random() * 0.6 + 0.2;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x < 0 || this.x > W) this.speedX *= -1;
+                    if (this.y < 0 || this.y > H) this.speedY *= -1;
+                }
+                draw() {
+                    pCtx.beginPath();
+                    pCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    pCtx.fillStyle = `rgba(201, 168, 76, ${this.opacity})`;
+                    pCtx.fill();
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < 140; i++) particles.push(new Particle());
+            }
+            initParticles();
+
+            function drawBackground() {
+                const grad = bgCtx.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.8);
+                grad.addColorStop(0, '#1a0b1f');
+                grad.addColorStop(1, '#050308');
+                bgCtx.fillStyle = grad;
+                bgCtx.fillRect(0, 0, W, H);
+            }
+
+            function drawParticles() {
+                pCtx.clearRect(0, 0, W, H);
+                particles.forEach(p => { p.update();
+                    p.draw(); });
+            }
+
+            function animateCanvas() {
+                drawBackground();
+                drawParticles();
+                requestAnimationFrame(animateCanvas);
+            }
+            animateCanvas();
+
+            // ======================================================================
+            // 4. SLIDE ENGINE
+            // ======================================================================
+            let currentSlide = 0;
+            let narrationComplete = false;
+            let ttsEnded = false;
+            let typeInterval = null;
+            let autoContinueTimer = null;
+            let narratorUtterance = null;
+            let ttsEnabled = true;
+
+            function stopTypewriter() {
+                if (typeInterval) { clearInterval(typeInterval);
+                    typeInterval = null; }
+            }
+
+            function stopNarrator() {
+                if (narratorUtterance) {
+                    try { window.speechSynthesis.cancel(); } catch (_) {}
+                    narratorUtterance = null;
+                }
+                if (currentSlide >= 1 && dots[currentSlide]) {
+                    dots[currentSlide].classList.add('paused');
+                }
+                if (currentSlide >= 1 && waves[currentSlide]) {
+                    waves[currentSlide].classList.add('paused');
+                }
+            }
+
+            function updateNarratorBar(progress) {
+                if (currentSlide < 1) return;
+                const dot = dots[currentSlide];
+                const wave = waves[currentSlide];
+                if (dot) {
+                    if (progress < 1) dot.classList.remove('paused');
+                    else dot.classList.add('paused');
+                }
+                if (wave) {
+                    if (progress < 1) wave.classList.remove('paused');
+                    else wave.classList.add('paused');
+                }
+            }
+
+            function startAutoContinue() {
+                if (autoContinueTimer) clearTimeout(autoContinueTimer);
+                const btn = continues[currentSlide];
+                if (btn) btn.classList.add('visible');
+                autoContinueTimer = setTimeout(() => {
+                    autoContinueTimer = null;
+                    if (narrationComplete && ttsEnded) {
+                        goToNextSlide();
+                    }
+                }, 5000);
+            }
+
+            function cancelAutoContinue() {
+                if (autoContinueTimer) {
+                    clearTimeout(autoContinueTimer);
+                    autoContinueTimer = null;
+                }
+            }
+
+            function speakText(text, slideIndex) {
+                if (!ttsEnabled || !('speechSynthesis' in window)) return;
+                try {
+                    if (narratorUtterance) {
+                        window.speechSynthesis.cancel();
+                    }
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+
+                    let voices = window.speechSynthesis.getVoices();
+
+                    if (voices.length === 0) {
+                        console.warn('No voices loaded yet, using default voice.');
+                    } else {
+                        const preferredNames = [
+                            'Microsoft David',
+                            'Microsoft Zira',
+                            'Samantha',
+                            'Alex',
+                            'Google UK English Female',
+                            'Google US English'
+                        ];
+
+                        let selectedVoice = null;
+
+                        for (const name of preferredNames) {
+                            selectedVoice = voices.find(v => v.name.includes(name));
+                            if (selectedVoice) break;
+                        }
+
+                        if (!selectedVoice) {
+                            selectedVoice = voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.startsWith(
+                            'en'));
+                        }
+
+                        if (!selectedVoice && voices.length > 0) {
+                            selectedVoice = voices[0];
+                        }
+
+                        if (selectedVoice) {
+                            utterance.voice = selectedVoice;
+                            console.log('🔊 Using TTS voice:', selectedVoice.name);
+                        }
+                    }
+
+                    utterance.rate = 0.92;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.9;
+
+                    ttsEnded = false;
+
+                    utterance.onstart = () => {
+                        const dot = dots[slideIndex];
+                        const wave = waves[slideIndex];
+                        if (dot) dot.classList.remove('paused');
+                        if (wave) wave.classList.remove('paused');
+                        if (window.__music && window.__music.duck) {
+                            window.__music.duck();
+                        }
+                    };
+
+                    utterance.onend = () => {
+                        const dot = dots[slideIndex];
+                        const wave = waves[slideIndex];
+                        if (dot) dot.classList.add('paused');
+                        if (wave) wave.classList.add('paused');
+                        ttsEnded = true;
+                        if (window.__music && window.__music.fadeOut) {
+                            window.__music.fadeOut(8000);
+                        }
+                        if (narrationComplete) {
+                            startAutoContinue();
+                        }
+                    };
+
+                    utterance.onerror = () => {
+                        const dot = dots[slideIndex];
+                        const wave = waves[slideIndex];
+                        if (dot) dot.classList.add('paused');
+                        if (wave) wave.classList.add('paused');
+                        ttsEnded = true;
+                        if (window.__music && window.__music.fadeOut) {
+                            window.__music.fadeOut(8000);
+                        }
+                        if (narrationComplete) {
+                            startAutoContinue();
+                        }
+                        ttsEnabled = false;
+                    };
+
+                    narratorUtterance = utterance;
+                    window.speechSynthesis.speak(utterance);
+                } catch (_) {
+                    ttsEnabled = false;
+                    ttsEnded = true;
+                    if (narrationComplete) {
+                        startAutoContinue();
+                    }
+                }
+            }
+
+            function loadSlide(index) {
+                if (index === 0) {
+                    slides.forEach(s => s.classList.remove('active', 'exit'));
+                    document.getElementById('slide-0').classList.add('active');
+                    currentSlide = 0;
+                    return;
+                }
+
+                const partIndex = index - 1;
+                if (partIndex >= partsData.length) return;
+                const text = partsData[partIndex];
+
+                currentSlide = index;
+                slides.forEach(s => s.classList.remove('active', 'exit'));
+                const slideEl = document.getElementById('slide-' + index);
+                if (slideEl) slideEl.classList.add('active');
+
+                const textEl = texts[index];
+                if (textEl) textEl.textContent = '';
+
+                stopTypewriter();
+                stopNarrator();
+                cancelAutoContinue();
+                narrationComplete = false;
+                ttsEnded = false;
+
+                const btn = continues[index];
+                if (btn) btn.classList.remove('visible');
+
+                const bar = narrators[index];
+                if (bar) bar.classList.add('visible');
+
+                if (window.__music && window.__music.fadeIn) {
+                    window.__music.fadeIn();
+                }
+
+                startTyping(text, index);
+                speakText(text, index);
+            }
+
+            function startTyping(text, slideIndex) {
+                let charIndex = 0;
+                const total = text.length;
+                const el = texts[slideIndex];
+                if (!el) return;
+
+                typeInterval = setInterval(() => {
+                    if (charIndex < text.length) {
+                        el.textContent = text.substring(0, charIndex + 1);
+                        charIndex++;
+                        const progress = charIndex / total;
+                        updateNarratorBar(progress);
+                        el.scrollTop = el.scrollHeight;
+                    } else {
+                        clearInterval(typeInterval);
+                        typeInterval = null;
+                        narrationComplete = true;
+                        updateNarratorBar(1);
+                        if (ttsEnded) {
+                            startAutoContinue();
+                        }
+                    }
+                }, 16);
+            }
+
+            function goToNextSlide() {
+                cancelAutoContinue();
+                if (currentSlide === 0) {
+                    loadSlide(1);
+                } else if (currentSlide < 16) {
+                    loadSlide(currentSlide + 1);
+                } else {
+                    slides.forEach(s => s.classList.remove('active', 'exit'));
+                    document.getElementById('slide-16').classList.add('exit');
+                    finalOverlay.classList.add('active');
+                }
+            }
+
+            // ======================================================================
+            // 5. EVENT LISTENERS
+            // ======================================================================
+
+            btnBegin.addEventListener('click', function() {
+                ensureAudioPlayback();
+                goToNextSlide();
+            });
+
+            for (let i = 1; i <= 16; i++) {
+                const btn = continues[i];
+                if (btn) {
+                    btn.addEventListener('click', function() {
+                        if (narrationComplete && ttsEnded) {
+                            cancelAutoContinue();
+                            goToNextSlide();
+                        }
+                    });
+                }
+            }
+
+            skipBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (currentSlide === 0) {
+                    ensureAudioPlayback();
+                    goToNextSlide();
+                } else if (currentSlide >= 1 && currentSlide <= 16) {
+                    if (narrationComplete && ttsEnded) {
+                        cancelAutoContinue();
+                        goToNextSlide();
+                    } else {
+                        stopTypewriter();
+                        stopNarrator();
+                        narrationComplete = true;
+                        ttsEnded = true;
+                        cancelAutoContinue();
+                        goToNextSlide();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (currentSlide === 0) {
+                        ensureAudioPlayback();
+                        goToNextSlide();
+                    } else if (currentSlide >= 1 && currentSlide <= 16) {
+                        if (narrationComplete && ttsEnded) {
+                            cancelAutoContinue();
+                            goToNextSlide();
+                        }
+                    }
+                }
+                if (e.key === 'Escape') {
+                    stopTypewriter();
+                    stopNarrator();
+                }
+            });
+
+            slides.forEach((slide, idx) => {
+                if (idx >= 1 && idx <= 16) {
+                    slide.addEventListener('click', function() {
+                        if (narrationComplete && ttsEnded) {
+                            cancelAutoContinue();
+                            goToNextSlide();
+                        }
+                    });
+                }
+            });
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+                window.speechSynthesis.onvoiceschanged = () => {
+                    window.speechSynthesis.getVoices();
+                };
+            }
+
+            console.log('✦ The Age of Black Fire · Chapter 2 ✦');
+            console.log('📖 16 parts loaded. Cinematic title card added.');
+
+        })();
+    </script>
+
 </body>
 </html>

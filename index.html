@@ -976,18 +976,20 @@
             'use strict';
 
             // ======================================================================
-            // 0. YOUTUBE PLAYER — DUAL‑LAYER AUTOPLAY
+            // 0. YOUTUBE PLAYER — DUAL‑LAYER AUTOPLAY WITH FALLBACK
             // ======================================================================
             let player = null;
             let playerReady = false;
-            let currentVolume = 40; // <-- increased from 20
+            let currentVolume = 40;
             let targetVolume = 40;
             let fadeInterval = null;
             let isFading = false;
             let fallbackIframe = null;
             let apiFallbackTimer = null;
+            let audioUnmuted = false;
 
             const container = document.getElementById('youtube-container');
+            const playerDiv = document.getElementById('youtube-player');
 
             function setPlayerVolume(vol) {
                 if (!player || !playerReady) return;
@@ -1004,6 +1006,14 @@
                 const fill = document.getElementById('volFill');
                 if (fill) {
                     fill.style.width = Math.min(vol, 100) + '%';
+                }
+                const label = document.getElementById('musicLabel');
+                if (vol === 0) {
+                    label.textContent = '♫ paused';
+                } else if (vol < 20) {
+                    label.textContent = '♫ low';
+                } else {
+                    label.textContent = '♫ playing';
                 }
             }
 
@@ -1076,6 +1086,7 @@
                 isFading: () => isFading
             };
 
+            // ---- Fallback iframe ----
             function createFallbackIframe() {
                 if (fallbackIframe) return;
                 fallbackIframe = document.createElement('iframe');
@@ -1091,8 +1102,10 @@
                 playerReady = true;
                 document.getElementById('music-indicator').classList.add('active');
                 updateVolumeIndicator(40);
+                // Try to unmute fallback after user gesture (but it's not possible)
             }
 
+            // ---- API attempt ----
             function loadYouTubeAPI() {
                 if (document.getElementById('youtube-api')) return;
                 const tag = document.createElement('script');
@@ -1125,17 +1138,21 @@
                     events: {
                         onReady: function(event) {
                             playerReady = true;
-                            event.target.setVolume(40); // <-- increased
+                            event.target.setVolume(40);
                             currentVolume = 40;
                             targetVolume = 40;
                             updateVolumeIndicator(40);
                             document.getElementById('music-indicator').classList.add('active');
+                            // Try to play
                             event.target.playVideo();
                             console.log('🎵 YouTube API player ready (muted).');
                         },
                         onStateChange: function(event) {
                             if (event.data === YT.PlayerState.ENDED) {
                                 player.playVideo();
+                            }
+                            if (event.data === YT.PlayerState.PLAYING) {
+                                console.log('🎵 YouTube API is playing.');
                             }
                         },
                         onError: function(event) {
@@ -1173,6 +1190,7 @@
                     targetVolume = 40;
                     updateVolumeIndicator(40);
                     player.playVideo();
+                    audioUnmuted = true;
                     console.log('🎵 Audio unmuted and playing at 40%.');
                 } catch (e) {
                     console.warn('Unmute error:', e);
@@ -1282,7 +1300,6 @@
             const skipBtn = document.getElementById('skipBtn');
             const btnBegin = document.getElementById('btnBegin');
 
-            // Store elements for each slide (1-indexed)
             const dots = {};
             const waves = {};
             const texts = {};
@@ -1690,7 +1707,7 @@
 
             console.log('✦ The Age of Black Fire · Chapter 2 ✦');
             console.log('📖 16 parts loaded. Cinematic title card added.');
-            console.log('🔊 Music volume increased to 40%.');
+            console.log('🔊 Music volume set to 40%.');
 
         })();
     </script>

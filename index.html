@@ -109,7 +109,7 @@
         }
 
         /* ============================================================
-           SLIDE 0: CINEMATIC TITLE CARD (EPIC & DYNAMIC)
+           SLIDE 0: CINEMATIC TITLE CARD
         ============================================================ */
         #slide-0 {
             background: radial-gradient(ellipse at 50% 40%, #1a0b2a 0%, #0a0a0f 70%, #050308 100%);
@@ -118,7 +118,6 @@
             overflow: hidden;
         }
 
-        /* Animated golden vignette overlay */
         #slide-0::before {
             content: '';
             position: absolute;
@@ -137,7 +136,6 @@
             50% { transform: scale(1.3); opacity: 1; }
         }
 
-        /* Floating gold dust (CSS particles) */
         #slide-0 .dust {
             position: absolute;
             width: 4px;
@@ -173,7 +171,6 @@
         #slide-0 .dust:nth-child(7) { left: 90%; animation-duration: 17s; animation-delay: 2.5s; width: 5px; height: 5px; }
         #slide-0 .dust:nth-child(8) { left: 45%; animation-duration: 15s; animation-delay: 6s; width: 3px; height: 3px; }
 
-        /* Chapter number — large, glowing, with text-shadow animation */
         #slide-0 .chapter-number {
             font-family: 'Cinzel', serif;
             font-size: clamp(3rem, 6vw, 6rem);
@@ -192,7 +189,6 @@
             50% { text-shadow: 0 0 60px rgba(201, 168, 76, 0.5), 0 0 120px rgba(201, 168, 76, 0.15), 0 0 200px rgba(201, 168, 76, 0.05); }
         }
 
-        /* Title — epic gradient, large, with letter-spacing animation */
         #slide-0 .chapter-title {
             font-family: 'Cinzel', serif;
             font-weight: 900;
@@ -215,7 +211,6 @@
             50% { background-position: 100% 50%; }
         }
 
-        /* Subtitle — with a golden underline bar */
         #slide-0 .chapter-sub {
             font-size: clamp(0.75rem, 1.2vw, 1.1rem);
             font-weight: 300;
@@ -253,7 +248,6 @@
             }
         }
 
-        /* Begin button — refined with gold border glow and icon */
         .btn-begin {
             margin-top: 1.2rem;
             padding: 0.9rem 3.5rem;
@@ -596,7 +590,7 @@
         }
         #music-indicator .vol-bar .vol-fill {
             height: 100%;
-            width: 20%;
+            width: 40%;
             background: var(--gold);
             border-radius: 1px;
             transition: width 0.5s ease;
@@ -717,7 +711,7 @@
     <!-- ====== MUSIC INDICATOR ====== -->
     <div id="music-indicator">
         <span id="musicLabel">♪</span>
-        <span class="vol-bar"><span class="vol-fill" id="volFill" style="width:20%"></span></span>
+        <span class="vol-bar"><span class="vol-fill" id="volFill" style="width:40%"></span></span>
     </div>
 
     <!-- ====== YOUTUBE PLAYER ====== -->
@@ -727,7 +721,6 @@
 
     <!-- ====== SLIDE 0: CINEMATIC TITLE CARD ====== -->
     <div id="slide-0" class="slide active">
-        <!-- Floating golden dust particles -->
         <div class="dust"></div>
         <div class="dust"></div>
         <div class="dust"></div>
@@ -987,8 +980,8 @@
             // ======================================================================
             let player = null;
             let playerReady = false;
-            let currentVolume = 20;
-            let targetVolume = 20;
+            let currentVolume = 40; // <-- increased from 20
+            let targetVolume = 40;
             let fadeInterval = null;
             let isFading = false;
             let fallbackIframe = null;
@@ -1063,8 +1056,8 @@
             }
 
             function fadeInMusic() {
-                if (currentVolume === 20 || !player || !playerReady) return;
-                fadeVolume(20, 2000);
+                if (currentVolume === 40 || !player || !playerReady) return;
+                fadeVolume(40, 2000);
             }
 
             window.__music = {
@@ -1097,7 +1090,7 @@
                 console.log('🎵 Fallback iframe injected (muted autoplay).');
                 playerReady = true;
                 document.getElementById('music-indicator').classList.add('active');
-                updateVolumeIndicator(20);
+                updateVolumeIndicator(40);
             }
 
             function loadYouTubeAPI() {
@@ -1132,10 +1125,10 @@
                     events: {
                         onReady: function(event) {
                             playerReady = true;
-                            event.target.setVolume(20);
-                            currentVolume = 20;
-                            targetVolume = 20;
-                            updateVolumeIndicator(20);
+                            event.target.setVolume(40); // <-- increased
+                            currentVolume = 40;
+                            targetVolume = 40;
+                            updateVolumeIndicator(40);
                             document.getElementById('music-indicator').classList.add('active');
                             event.target.playVideo();
                             console.log('🎵 YouTube API player ready (muted).');
@@ -1175,12 +1168,12 @@
                 if (!player || !playerReady) return;
                 try {
                     player.unMute();
-                    player.setVolume(20);
-                    currentVolume = 20;
-                    targetVolume = 20;
-                    updateVolumeIndicator(20);
+                    player.setVolume(40);
+                    currentVolume = 40;
+                    targetVolume = 40;
+                    updateVolumeIndicator(40);
                     player.playVideo();
-                    console.log('🎵 Audio unmuted and playing.');
+                    console.log('🎵 Audio unmuted and playing at 40%.');
                 } catch (e) {
                     console.warn('Unmute error:', e);
                 }
@@ -1697,6 +1690,7 @@
 
             console.log('✦ The Age of Black Fire · Chapter 2 ✦');
             console.log('📖 16 parts loaded. Cinematic title card added.');
+            console.log('🔊 Music volume increased to 40%.');
 
         })();
     </script>
